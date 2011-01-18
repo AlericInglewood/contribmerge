@@ -31,11 +31,13 @@ int main()
 {
   Debug(debug::init());
 
+#ifndef USING_CMAKE
 #ifdef USE_GIT
   std::cout << "Running " << git_revision << '\n';
 #else
   std::cout << "Running contribmerge version " VERSION "\n";
 #endif
+#endif // USING_CMAKE
 
   std::cout << "Hello World\n";
 }
