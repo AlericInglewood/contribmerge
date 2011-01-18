@@ -70,20 +70,14 @@ namespace grammar
 	        empty_line >> contributor_full_name >> eol
 	    ;
 
-	    junk_line =
-	        *lit('x') >> +eol
-	    ;
-
-	    leading_junk =
-                junk_line - start
-                //*((*(char_ - lit('\r') - lit('\n')) >> +eol) - start)
-            ;
-
 	    jira_project_key_prefix =
 	    	(
 		      lit("VWR")
-		    | lit("SNOW")
 		    | lit("STORM")
+		    | lit("SNOW")
+		    | lit("SVC")
+		    | lit("WEB")
+		    | lit("CT")
 		)
 	    ;
 
@@ -99,9 +93,16 @@ namespace grammar
 	    	contributor_full_name >> *blank >> eol >> *contribution_entry
 	    ;
 
+	    junk_line =
+	        *(char_ - lit('\r') - lit('\n')) >> eol
+	    ;
+
+	    leading_junk =
+                *(junk_line - start)
+            ;
+
 	    file =
-	        junk_line
-		//leading_junk >> empty_line >> +contributor >> qi::omit[*empty_line]
+		qi::omit[leading_junk >> empty_line] >> +contributor >> qi::omit[*empty_line]
 	    ;
         }
 
