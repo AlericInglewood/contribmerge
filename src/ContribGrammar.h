@@ -70,8 +70,13 @@ namespace grammar
 	        empty_line >> contributor_full_name >> eol
 	    ;
 
+	    junk_line =
+	        *lit('x') >> +eol
+	    ;
+
 	    leading_junk =
-                *((*~eol >> +eol) - start)
+                junk_line - start
+                //*((*(char_ - lit('\r') - lit('\n')) >> +eol) - start)
             ;
 
 	    jira_project_key_prefix =
@@ -87,7 +92,7 @@ namespace grammar
 	    ;
 
 	    contribution_entry =
-	        +blank >> jira_project_key >> +blank >> eol
+	        +blank >> jira_project_key >> *blank >> eol
 	    ;
 
 	    contributor =
@@ -95,7 +100,8 @@ namespace grammar
 	    ;
 
 	    file =
-		qi::omit[leading_junk >> empty_line] >> +contributor >> qi::omit[*empty_line]
+	        junk_line
+		//leading_junk >> empty_line >> +contributor >> qi::omit[*empty_line]
 	    ;
         }
 
@@ -103,6 +109,7 @@ namespace grammar
         qi::rule<Iterator> contributor_full_name;
         qi::rule<Iterator> empty_line;
         qi::rule<Iterator> start;
+        qi::rule<Iterator> junk_line;
         qi::rule<Iterator> leading_junk;
 	qi::rule<Iterator> jira_project_key_prefix;
 	qi::rule<Iterator> jira_project_key;

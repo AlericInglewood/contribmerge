@@ -22,6 +22,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <iomanip>
 #include "debug.h"
 #endif
 
