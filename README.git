@@ -1,0 +1,18 @@
+Getting source from github
+--------------------------
+
+git clone git://github.com/AlericInglewood/contribmerge.git
+
+Initial Initialisation
+----------------------
+
+If you checked out this directory with git, then you will need to execute:
+
+./autogen.sh
+
+You only need to do this once. After that please read INSTALL.
+
+You must use --enable-maintainer-mode with configure if you checked out
+the source code with git (otherwise certain changes will not regenerate
+generated files and you'd have to re-run ./autogen.sh every time you
+updated).
