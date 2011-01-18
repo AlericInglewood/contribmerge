@@ -20,4 +20,8 @@
 #ifndef CONTRIBMERGE_H
 #define CONTRIBMERGE_H
 
+#include "ContribGrammar.h"
+
+extern char const* git_revision;
+
 #endif // CONTRIBMERGE_H

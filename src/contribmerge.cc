@@ -20,24 +20,53 @@
 #ifndef USE_PCH
 #include "sys.h"
 #include <iostream>
+#include <string>
+#include <vector>
 #include "debug.h"
 #endif
 
 #include "contribmerge.h"
 
-extern char const* git_revision;
-
 int main()
 {
-  Debug(debug::init());
+    Debug(debug::init());
 
-#ifndef USING_CMAKE
-#ifdef USE_GIT
-  std::cout << "Running " << git_revision << '\n';
-#else
-  std::cout << "Running contribmerge version " VERSION "\n";
-#endif
-#endif // USING_CMAKE
+    std::ifstream infile;
+    infile.open("testinput");
+    infile.unsetf(std::ios::skipws);
 
-  std::cout << "Hello World\n";
+    typedef boost::spirit::istream_iterator iterator_type;
+    typedef grammar::contributions_txt<iterator_type> contributions_txt;
+
+    contributions_txt contributions_txt_parser; // Our grammar
+
+    std::string str;
+    unsigned result;
+
+    boost::spirit::istream_iterator iter(infile);
+    boost::spirit::istream_iterator end;
+
+    bool r = parse(iter, end, contributions_txt_parser, result);
+
+    if (r && iter == end)
+    {
+	std::cout << "-------------------------\n";
+	std::cout << "Parsing succeeded\n";
+	std::cout << "result = " << result << std::endl;
+	std::cout << "-------------------------\n";
+    }
+    else
+    {
+	std::string rest(iter, end);
+	std::cout << "-------------------------\n";
+	std::cout << "Parsing failed\n";
+	std::cout << "stopped at: \": " << rest << "\"\n";
+	std::cout << "-------------------------\n";
+    }
+
+    infile.close();
+
+    std::cout << "Bye... :-) \n\n";
+    return 0;
 }
+
