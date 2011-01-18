@@ -31,9 +31,9 @@
 #include <iostream>
 #include <string>
 
-void print(void)
+void print(int n)
 {
-  std::cout << "We get here!" << std::endl;
+  std::cout << "Got: " << n << std::endl;
 }
 
 namespace grammar
@@ -82,11 +82,16 @@ namespace grammar
 	    ;
 
 	    jira_project_key =
-		(jira_project_key_prefix >> '-' >> int_)[&print]
+		  (jira_project_key_prefix >> '-' >> int_)[&print]
+		| lit("[NO JIRA]")
+	    ;
+
+	    comment =
+	        lit('(') >> *~lit(')') >> lit(')')
 	    ;
 
 	    contribution_entry =
-	        +blank >> jira_project_key >> *blank >> eol
+	        +blank >> jira_project_key >> *blank >> -comment >> *blank >> eol
 	    ;
 
 	    contributor =
@@ -114,6 +119,7 @@ namespace grammar
         qi::rule<Iterator> leading_junk;
 	qi::rule<Iterator> jira_project_key_prefix;
 	qi::rule<Iterator> jira_project_key;
+	qi::rule<Iterator> comment;
 	qi::rule<Iterator> contribution_entry;
 	qi::rule<Iterator> contributor;
         qi::rule<Iterator> file;
