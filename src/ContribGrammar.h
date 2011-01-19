@@ -31,15 +31,40 @@
 #include <iostream>
 #include <string>
 
-void print(int n)
+void print_jira_project_key(int n)
 {
-  std::cout << "Got: " << n << std::endl;
+  std::cout << "jira_project_key: " << n << std::endl;
 }
 
 void print_comment(std::vector<char> const& comment)
 {
-  std::cout << "Got: \"";
+  std::cout << "comment: \"";
   for (std::vector<char>::const_iterator iter = comment.begin(); iter != comment.end(); ++iter)
+  {
+    std::cout << *iter;
+  }
+  std::cout << '"' << std::endl;
+}
+
+void print_test(std::vector<char> const& comment)
+{
+  std::cout << "print_test:\"";
+  for (std::vector<char>::const_iterator iter = comment.begin(); iter != comment.end(); ++iter)
+  {
+    std::cout << *iter;
+  }
+  std::cout << '"' << std::endl;
+}
+
+void print_char(char c)
+{
+  std::cout << "char: '" << c << "'" << std::endl;
+}
+
+void print_vector(std::vector<char> const& v)
+{
+  std::cout << "vector: \"";
+  for (std::vector<char>::const_iterator iter = v.begin(); iter != v.end(); ++iter)
   {
     std::cout << *iter;
   }
@@ -65,7 +90,7 @@ namespace grammar
       using ascii::char_;
 
       contributor_first_name =
-	  alpha >> *alnum
+	  (alpha >> *alnum)[&print_vector]
       ;
 
       contributor_full_name =
@@ -123,7 +148,7 @@ namespace grammar
       ;
 
       jira_project_key =
-	    (jira_project_key_prefix >> '-' >> int_)[&print]
+	    (jira_project_key_prefix >> '-' >> int_)[&print_jira_project_key]
 	  | lit("[NO JIRA]")
       ;
 
