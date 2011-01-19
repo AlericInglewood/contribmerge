@@ -4,12 +4,18 @@
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+
+// Rule: jira_project_key
+struct JiraProjectKey {
+  std::string jira_project_key_prefix;
+  int issue_number;
+};
 
 // Rule: contribution_entry
 // Input: "\tVWR-101 (optional comment) \n" or "   SNOW-102  \n" (no comment).
 struct ContributionEntry {
-  std::string jira_project_key_prefix;		// Ie, "VWR"
-  int issue_number;				// Ie, 101
+  JiraProjectKey jira_project_key;
   std::string comment;				// Optional (empty if there is none).
 };
 
@@ -25,15 +31,55 @@ struct WholeFile {
   std::vector<Contributor> contributors;
 };
 
+BOOST_FUSION_ADAPT_STRUCT(
+    JiraProjectKey,
+    (std::string, jira_project_key_prefix)
+    (int, issue_number)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ContributionEntry,
+    (JiraProjectKey, jira_project_key)
+    (std::string, comment)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    Contributor,
+    (std::string, full_name)
+    (std::vector<ContributionEntry>, contributions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    WholeFile,
+    (std::string, header)
+    (std::vector<Contributor>, contributors)
+)
+  
+void print_int(int n)
+{
+  std::cout << "Got: " << n << "\n";
+}
+
+void print_test(std::string const& str)
+{
+  std::cout << "Got: \"" << str << "\".\n";
+}
+
+void print_test2(std::string const& str)
+{
+  std::cout << "contribution_entry: \"" << str << "\".\n";
+}
+
 namespace grammar
 {
   namespace qi = boost::spirit::qi;
+  namespace fusion = boost::fusion;
   namespace ascii = boost::spirit::ascii;
 
   template <typename Iterator>
-  struct contributions_txt : qi::grammar<Iterator>
+  struct contributions_txt : qi::grammar<Iterator, WholeFile()>
   {
-    contributions_txt() : contributions_txt::base_type(file)
+    contributions_txt() : contributions_txt::base_type(whole_file)
     {
       using qi::alpha;
       using qi::alnum;
@@ -41,14 +87,23 @@ namespace grammar
       using qi::eol;
       using qi::lit;
       using qi::int_;
+      using qi::omit;
+      using qi::raw;
+      using qi::string;
       using ascii::char_;
 
       contributor_first_name =
 	  alpha >> *alnum
       ;
 
+      contributor_last_name =
+	  -(omit[+blank] >> qi::attr(' ') >> +alpha)
+      ;
+
       contributor_full_name =
-	  contributor_first_name >> -(+blank >> +alpha)
+	  // The raw[] is needed for boost < 1.46.
+	  // Unfortunately this causes blanks between first and last to be returned literally.
+	  contributor_first_name >> raw[contributor_last_name];
       ;
 
       empty_line =
@@ -61,22 +116,22 @@ namespace grammar
 
       jira_project_key_prefix =
 	  (
-		lit("VWR")  // 1. Second Life Viewer - VWR
-	      | lit("SVC")  // 2. Second Life Service - SVC
-	      | lit("WEB")  // 3. Second Life Website - WEB
-	      | lit("SEC")  // 4. Second Life Security Exploits - SEC
-	      | lit("SNOW") // Snowglobe
-	      | lit("SH")   // Shining
-	      | lit("DN")   // Display Names
-	      | lit("CTS")  // Mesh Beta
-	      | lit("STORM")// Snowstorm
-	      | lit("CT")   // Community Translations
+		string("VWR")  // 1. Second Life Viewer - VWR
+	      | string("SVC")  // 2. Second Life Service - SVC
+	      | string("WEB")  // 3. Second Life Website - WEB
+	      | string("SEC")  // 4. Second Life Security Exploits - SEC
+	      | string("SNOW") // Snowglobe
+	      | string("SH")   // Shining
+	      | string("DN")   // Display Names
+	      | string("CTS")  // Mesh Beta
+	      | string("STORM")// Snowstorm
+	      | string("CT")   // Community Translations
 	  )
       ;
 
       jira_project_key =
-	    (jira_project_key_prefix >> '-' >> int_)
-	  | lit("[NO JIRA]")
+	    ("[NO JIRA]" >> qi::attr(0))
+	  | (jira_project_key_prefix[&print_test] >> '-' >> int_[&print_int])
       ;
 
       any_char_but_eol =
@@ -88,16 +143,16 @@ namespace grammar
       ;
 
       optional_comment =
-	    (+blank >> comment >> *blank)
-	  | *blank
+	    (omit[+blank] >> comment >> omit[*blank])
+	  | omit[*blank]
       ;
 
       contribution_entry =
-	  +blank >> jira_project_key >> optional_comment >> eol
+	  omit[+blank] >> jira_project_key >> optional_comment >> eol
       ;
 
       contributor =
-	  contributor_full_name >> *blank >> eol >> *contribution_entry
+	  contributor_full_name >> omit[*blank] >> eol >> *contribution_entry
       ;
 
       header_line =
@@ -105,28 +160,30 @@ namespace grammar
       ;
 
       header =
-	  *(header_line - start)
+	  // Return the header literally.
+	  raw[*(header_line - start)]
       ;
 
-      file =
-	  header >> empty_line >> +contributor >> qi::omit[*empty_line]
+      whole_file =
+	  header >> empty_line >> +contributor >> *empty_line
       ;
     }
 
-    qi::rule<Iterator> contributor_first_name;
-    qi::rule<Iterator> contributor_full_name;
+    qi::rule<Iterator, std::string()> contributor_first_name;
+    qi::rule<Iterator, std::string()> contributor_last_name;
+    qi::rule<Iterator, std::string()> contributor_full_name;
     qi::rule<Iterator> empty_line;
     qi::rule<Iterator> start;
-    qi::rule<Iterator> any_char_but_eol;
-    qi::rule<Iterator> header_line;
-    qi::rule<Iterator> header;
-    qi::rule<Iterator> jira_project_key_prefix;
-    qi::rule<Iterator> jira_project_key;
-    qi::rule<Iterator> comment;
-    qi::rule<Iterator> optional_comment;
-    qi::rule<Iterator> contribution_entry;
-    qi::rule<Iterator> contributor;
-    qi::rule<Iterator> file;
+    qi::rule<Iterator, char()> any_char_but_eol;
+    qi::rule<Iterator, std::string()> header_line;
+    qi::rule<Iterator, std::string()> header;
+    qi::rule<Iterator, std::string()> jira_project_key_prefix;
+    qi::rule<Iterator, JiraProjectKey()> jira_project_key;
+    qi::rule<Iterator, std::string()> comment;
+    qi::rule<Iterator, std::string()> optional_comment;
+    qi::rule<Iterator, ContributionEntry()> contribution_entry;
+    qi::rule<Iterator, Contributor()> contributor;
+    qi::rule<Iterator, WholeFile()> whole_file;
   };
 
 } // namespace grammar
