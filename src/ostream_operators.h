@@ -24,6 +24,32 @@
 #include <iosfwd>		// Needed for std::ostream
 #endif
 
-//std::ostream& operator<<(std::ostream& os, TYPE const& NAME);
+#include "ContribGrammar.h"
+
+std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
+{
+  os << key.jira_project_key_prefix;
+  if (key.issue_number)
+    os << '-' << key.issue_number;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry)
+{
+  os << entry.jira_project_key;
+  if (!entry.comment.empty())
+    os << ' ' << entry.comment;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor)
+{
+  os << contributor.full_name << "\\n\n";
+  for (std::vector<attributes::ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
+  {
+    os << '\t' << *iter << "\\n\n";
+  }
+  return os;
+}
 
 #endif // OSTREAM_OPERATORS_H

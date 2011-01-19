@@ -21,6 +21,7 @@
 #define CONTRIBMERGE_H
 
 #include "ContribGrammar.h"
+#include "ostream_operators.h"
 
 extern char const* git_revision;
 

@@ -31,44 +31,38 @@
 
 int main()
 {
-    Debug(debug::init());
+  Debug(debug::init());
 
-    std::ifstream infile;
-    infile.open("testinput");
-    infile.unsetf(std::ios::skipws);
+  std::ifstream infile;
+  infile.open("testinput");
+  infile.unsetf(std::ios::skipws);
 
-    typedef boost::spirit::istream_iterator iterator_type;
-    typedef grammar::contributions_txt<iterator_type> contributions_txt;
+  typedef boost::spirit::istream_iterator iterator_type;
+  typedef grammar::contributions_txt_grammar<iterator_type> contributions_txt_grammar;
+  iterator_type iter(infile);
+  iterator_type end;
+  contributions_txt_grammar contributions_txt_parser;	// Our grammar.
+  attributes::ContributionsTxt result;			// The result.
+  bool r = parse(iter, end, contributions_txt_parser, result);
 
-    contributions_txt contributions_txt_parser; // Our grammar
+  infile.close();
 
-    std::string str;
-    unsigned result;
-
-    boost::spirit::istream_iterator iter(infile);
-    boost::spirit::istream_iterator end;
-
-    bool r = parse(iter, end, contributions_txt_parser, result);
-
-    if (r && iter == end)
+  if (r && iter == end)
+  {
+    std::cout << "Parsing succeeded\n";
+    std::cout << "Header:=======================================\n" << result.header << "==============================================\n";
+    std::cout << "Number of Contributors: " << result.contributors.size() << std::endl;
+    for (std::vector<attributes::Contributor>::iterator iter = result.contributors.begin(); iter != result.contributors.end(); ++iter)
     {
-	std::cout << "-------------------------\n";
-	std::cout << "Parsing succeeded\n";
-	std::cout << "result = " << result << std::endl;
-	std::cout << "-------------------------\n";
+      std::cout << *iter;
     }
-    else
-    {
-	std::string rest(iter, end);
-	std::cout << "-------------------------\n";
-	std::cout << "Parsing failed\n";
-	std::cout << "stopped at: \": " << rest << "\"\n";
-	std::cout << "-------------------------\n";
-    }
+  }
+  else
+  {
+    std::string rest(iter, end);
+    std::cout << "Parsing failed\n" << "stopped at: \": " << rest << "\"\n";
+  }
 
-    infile.close();
-
-    std::cout << "Bye... :-) \n\n";
-    return 0;
+  return 0;
 }
 
