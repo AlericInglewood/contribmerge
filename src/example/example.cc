@@ -14,7 +14,10 @@ struct JiraProjectKey {
 
 std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key)
 {
-  return os << key.jira_project_key_prefix << '-' << key.issue_number;
+  os << key.jira_project_key_prefix;
+  if (key.issue_number)
+    os << '-' << key.issue_number;
+  return os;
 }
 
 // Rule: contribution_entry
@@ -77,21 +80,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, header)
     (std::vector<Contributor>, contributors)
 )
-  
-void print_int(int n)
-{
-  std::cout << "Got: " << n << "\n";
-}
-
-void print_test(std::string const& str)
-{
-  std::cout << "Got: \"" << str << "\".\n";
-}
-
-void print_test2(std::string const& str)
-{
-  std::cout << "contribution_entry: \"" << str << "\".\n";
-}
 
 namespace grammar
 {
@@ -109,6 +97,7 @@ namespace grammar
       using qi::blank;
       using qi::eol;
       using qi::lit;
+      using qi::eps;
       using qi::int_;
       using qi::omit;
       using qi::raw;
@@ -140,7 +129,7 @@ namespace grammar
 	  // optional doesn't work here because of a bug in boost::spirit
 	  // (it would cause the attribute to be reset).
 	  // This should be fixed in boost >= 1.46.
-	  contributor_first_name >> (contributor_last_name | qi::eps)
+	  contributor_first_name >> (contributor_last_name | eps)
       ;
 
       // An eol of sequence including optional preceding white space.
@@ -181,8 +170,8 @@ namespace grammar
       // A jira project key.
       // The attribute is JiraProjectKey.
       jira_project_key =
-	    ("[NO JIRA]" >> qi::attr(0))
-	  | (jira_project_key_prefix[&print_test] >> '-' >> int_[&print_int])
+	    (jira_project_key_prefix >> '-' >> int_)
+	  | (string("[NO JIRA]") >> (int_ | eps))
       ;
 
       // Any character except eol characters.
