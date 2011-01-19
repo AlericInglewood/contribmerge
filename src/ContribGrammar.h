@@ -82,12 +82,44 @@ namespace grammar
 
 	    jira_project_key_prefix =
 	    	(
-		      lit("VWR")
-		    | lit("STORM")
-		    | lit("SNOW")
-		    | lit("SVC")
-		    | lit("WEB")
-		    | lit("CT")
+		    /* Keys from https://jira.secondlife.com/secure/BrowseProjects.jspa#all
+		     *
+		     * Commented-out jira projects aren't present in
+		     * doc/contributions.txt, yet and unlikely to ever
+		     * get any entries there (business units, archived
+		     * projects or unrelated to the Viewer)
+		     */
+		     
+		    // Plublic Portals
+		      lit("VWR")  // 1. Second Life Viewer - VWR
+		    | lit("SVC")  // 2. Second Life Service - SVC
+		    | lit("WEB")  // 3. Second Life Website - WEB
+		    | lit("SEC")  // 4. Second Life Security Exploits - SEC
+	//	    | lit("ARVD") // Archived
+	//	    | lit("MISC") // Misc Issues (Archived)
+		    | lit("SNOW") // Snowglobe
+		    
+		    // ECC
+	//	    | lit("ECC")  // Business Unit: ECC
+		    | lit("SH")   // Shining
+		    
+		    // LEAP
+	//	    | lit("LEAP") // Business Unit: LEAP
+		    | lit("DN")   // Display Names
+		    
+		    // Open Internal Projects
+	//	    | lit("LLSD") // LLSD
+		    | lit("CTS")  // Mesh Beta
+	//	    | lit("PYO")  // Pyogp
+		    | lit("STORM")// Snowstorm
+	//	    | lit("TPV")  // Third-Party Viewers
+		    
+		    // Platform: Development
+	//	    | lit("PLAT") // Business Unit: Platform
+	//	    | lit("ER")   // Engine Room
+		    
+		    // JIRA projects that aren publicly accessible anymore
+		    | lit("CT")   // Community Translations
 		)
 	    ;
 
