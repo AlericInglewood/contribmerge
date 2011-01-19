@@ -6,13 +6,35 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
+namespace attributes {
+
 // Rule: jira_project_key
 struct JiraProjectKey {
-  std::string jira_project_key_prefix;
-  int issue_number;
+  std::string jira_project_key_prefix;		// "VWR"
+  int issue_number;				// 123
 };
 
-std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key)
+// Rule: contribution_entry
+struct ContributionEntry {
+  JiraProjectKey jira_project_key;		// "VWR-123"
+  std::string comment;				// Optional (empty if there is none).
+};
+
+// Rule: contributor
+struct Contributor {
+  std::string full_name;			// "Firstname[ Lastname]"
+  std::vector<ContributionEntry> contributions;
+};
+
+// The type I want to parse the data into:
+struct ContributionsTxt {
+  std::string header;				// Raw header text.
+  std::vector<Contributor> contributors;
+};
+
+} // namespace attributes
+
+std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
 {
   os << key.jira_project_key_prefix;
   if (key.issue_number)
@@ -20,14 +42,7 @@ std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key)
   return os;
 }
 
-// Rule: contribution_entry
-// Input: "\tVWR-101 (optional comment) \n" or "   SNOW-102  \n" (no comment).
-struct ContributionEntry {
-  JiraProjectKey jira_project_key;
-  std::string comment;				// Optional (empty if there is none).
-};
-
-std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
+std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry)
 {
   os << entry.jira_project_key;
   if (!entry.comment.empty())
@@ -35,54 +50,44 @@ std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
   return os;
 }
 
-// Rule: contributor
-struct Contributor {
-  std::string full_name;
-  std::vector<ContributionEntry> contributions;
-};
-
-std::ostream& operator<<(std::ostream& os, Contributor const& contributor)
+std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor)
 {
   os << contributor.full_name << "\\n\n";
-  for (std::vector<ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
+  for (std::vector<attributes::ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
   {
     os << '\t' << *iter << "\\n\n";
   }
   return os;
 }
 
-// The type I want to parse the data into:
-struct ContributionsTxt {
-  std::string header;
-  std::vector<Contributor> contributors;
-};
-
 BOOST_FUSION_ADAPT_STRUCT(
-    JiraProjectKey,
+    attributes::JiraProjectKey,
     (std::string, jira_project_key_prefix)
     (int, issue_number)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ContributionEntry,
-    (JiraProjectKey, jira_project_key)
+    attributes::ContributionEntry,
+    (attributes::JiraProjectKey, jira_project_key)
     (std::string, comment)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    Contributor,
+    attributes::Contributor,
     (std::string, full_name)
-    (std::vector<ContributionEntry>, contributions)
+    (std::vector<attributes::ContributionEntry>, contributions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ContributionsTxt,
+    attributes::ContributionsTxt,
     (std::string, header)
-    (std::vector<Contributor>, contributors)
+    (std::vector<attributes::Contributor>, contributors)
 )
 
 namespace grammar
 {
+  using namespace attributes;
+
   namespace qi = boost::spirit::qi;
   namespace fusion = boost::fusion;
   namespace ascii = boost::spirit::ascii;
@@ -272,7 +277,7 @@ int main()
   iterator_type const end = input.end();
   contributions_txt_grammar contributions_txt_parser;
 
-  ContributionsTxt result;
+  attributes::ContributionsTxt result;
   bool r = parse(iter, end, contributions_txt_parser, result);
 
   if (r && iter == end)
@@ -280,7 +285,7 @@ int main()
     std::cout << "Parsing succeeded\n";
     std::cout << "Header:=======================================\n" << result.header << "==============================================\n";
     std::cout << "Number of Contributors: " << result.contributors.size() << std::endl;
-    for (std::vector<Contributor>::iterator iter = result.contributors.begin(); iter != result.contributors.end(); ++iter)
+    for (std::vector<attributes::Contributor>::iterator iter = result.contributors.begin(); iter != result.contributors.end(); ++iter)
     {
       std::cout << *iter;
     }
