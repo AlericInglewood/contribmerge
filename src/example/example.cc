@@ -12,6 +12,11 @@ struct JiraProjectKey {
   int issue_number;
 };
 
+std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key)
+{
+  return os << key.jira_project_key_prefix << '-' << key.issue_number;
+}
+
 // Rule: contribution_entry
 // Input: "\tVWR-101 (optional comment) \n" or "   SNOW-102  \n" (no comment).
 struct ContributionEntry {
@@ -19,14 +24,32 @@ struct ContributionEntry {
   std::string comment;				// Optional (empty if there is none).
 };
 
+std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
+{
+  os << entry.jira_project_key;
+  if (!entry.comment.empty())
+    os << ' ' << entry.comment;
+  return os << '\n';
+}
+
 // Rule: contributor
 struct Contributor {
   std::string full_name;
   std::vector<ContributionEntry> contributions;
 };
 
+std::ostream& operator<<(std::ostream& os, Contributor const& contributor)
+{
+  os << contributor.full_name << '\n';
+  for (std::vector<ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
+  {
+    os << '\t' << *iter;
+  }
+  return os;
+}
+
 // The type I want to parse the data into:
-struct WholeFile {
+struct ContributionsTxt {
   std::string header;
   std::vector<Contributor> contributors;
 };
@@ -50,7 +73,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    WholeFile,
+    ContributionsTxt,
     (std::string, header)
     (std::vector<Contributor>, contributors)
 )
@@ -77,9 +100,9 @@ namespace grammar
   namespace ascii = boost::spirit::ascii;
 
   template <typename Iterator>
-  struct contributions_txt : qi::grammar<Iterator, WholeFile()>
+  struct contributions_txt_grammar : qi::grammar<Iterator, ContributionsTxt()>
   {
-    contributions_txt() : contributions_txt::base_type(whole_file)
+    contributions_txt_grammar() : contributions_txt_grammar::base_type(contributions_txt)
     {
       using qi::alpha;
       using qi::alnum;
@@ -164,7 +187,7 @@ namespace grammar
 	  raw[*(header_line - start)]
       ;
 
-      whole_file =
+      contributions_txt =
 	  header >> empty_line >> +contributor >> *empty_line
       ;
     }
@@ -183,7 +206,7 @@ namespace grammar
     qi::rule<Iterator, std::string()> optional_comment;
     qi::rule<Iterator, ContributionEntry()> contribution_entry;
     qi::rule<Iterator, Contributor()> contributor;
-    qi::rule<Iterator, WholeFile()> whole_file;
+    qi::rule<Iterator, ContributionsTxt()> contributions_txt;
   };
 
 } // namespace grammar
@@ -196,7 +219,7 @@ std::string const input =
 "still more header\n"
 "\n"	// Empty line
 // First contributor starts here
-"Firstname1 Lastname\n"
+"Firstname1    Lastname\n"
   "\tVWR-101\n"
 "    SNOW-102 (some comment)  \n"
  "\t STORM-103\n"
@@ -214,26 +237,30 @@ std::string const input =
 
 int main()
 {
-    typedef std::string::const_iterator iterator_type;
-    typedef grammar::contributions_txt<iterator_type> contributions_txt;
+  typedef std::string::const_iterator iterator_type;
+  typedef grammar::contributions_txt_grammar<iterator_type> contributions_txt_grammar;
 
-    iterator_type iter = input.begin();
-    iterator_type const end = input.end();
-    contributions_txt contributions_txt_parser;
+  iterator_type iter = input.begin();
+  iterator_type const end = input.end();
+  contributions_txt_grammar contributions_txt_parser;
 
-    WholeFile result;
-    bool r = parse(iter, end, contributions_txt_parser, result);
+  ContributionsTxt result;
+  bool r = parse(iter, end, contributions_txt_parser, result);
 
-    if (r && iter == end)
+  if (r && iter == end)
+  {
+    std::cout << "Parsing succeeded\n";
+    std::cout << "Header:=======================================\n" << result.header << "==============================================\n";
+    std::cout << "Number of Contributors: " << result.contributors.size() << std::endl;
+    for (std::vector<Contributor>::iterator iter = result.contributors.begin(); iter != result.contributors.end(); ++iter)
     {
-	std::cout << "Parsing succeeded\n";
-	std::cout << "Header: \"" << result.header << "\".\n";
-	std::cout << "Contributors: " << result.contributors.size() << std::endl;
+      std::cout << *iter << '\n';
     }
-    else
-    {
-	std::string rest(iter, end);
-	std::cout << "Parsing failed\n" << "stopped at: \": " << rest << "\"\n";
-    }
+  }
+  else
+  {
+    std::string rest(iter, end);
+    std::cout << "Parsing failed\n" << "stopped at: \": " << rest << "\"\n";
+  }
 }
 
