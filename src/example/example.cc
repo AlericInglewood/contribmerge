@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
   os << entry.jira_project_key;
   if (!entry.comment.empty())
     os << ' ' << entry.comment;
-  return os << '\n';
+  return os;
 }
 
 // Rule: contributor
@@ -40,10 +40,10 @@ struct Contributor {
 
 std::ostream& operator<<(std::ostream& os, Contributor const& contributor)
 {
-  os << contributor.full_name << '\n';
+  os << contributor.full_name << "\\n\n";
   for (std::vector<ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
   {
-    os << '\t' << *iter;
+    os << '\t' << *iter << "\\n\n";
   }
   return os;
 }
@@ -120,13 +120,15 @@ namespace grammar
       ;
 
       contributor_last_name =
-	  -(omit[+blank] >> qi::attr(' ') >> +alpha)
+	  &(+blank >> alpha) >> omit[+blank] >> qi::attr(' ') >> +alpha
+	  //-(omit[+blank] >> qi::attr(' ') >> +alpha)
       ;
 
       contributor_full_name =
+	  contributor_first_name >> (contributor_last_name | qi::eps)
 	  // The raw[] is needed for boost < 1.46.
 	  // Unfortunately this causes blanks between first and last to be returned literally.
-	  contributor_first_name >> raw[contributor_last_name];
+	  //contributor_first_name >> raw[contributor_last_name];
       ;
 
       empty_line =
@@ -134,7 +136,7 @@ namespace grammar
       ;
 
       start =
-	  empty_line >> contributor_full_name >> eol
+	  empty_line >> contributor_full_name >> *blank >> eol
       ;
 
       jira_project_key_prefix =
@@ -219,17 +221,17 @@ std::string const input =
 "still more header\n"
 "\n"	// Empty line
 // First contributor starts here
-"Firstname1    Lastname\n"
+"First123name    Lastname   \n"
   "\tVWR-101\n"
 "    SNOW-102 (some comment)  \n"
  "\t STORM-103\n"
 
-"Firstname2\n"
+"JustFirstname\n"
   "\tVWR-201\n"
   "\t[NO JIRA] (but worked hard on this)\n"
   "\tSTORM-203  \n"
 
-"Firstname3 Lastname\n"
+"JustFirstnameWith3Space   \n"
    " STORM-301  \n"
 
 // Trailing white spaces.
@@ -254,7 +256,7 @@ int main()
     std::cout << "Number of Contributors: " << result.contributors.size() << std::endl;
     for (std::vector<Contributor>::iterator iter = result.contributors.begin(); iter != result.contributors.end(); ++iter)
     {
-      std::cout << *iter << '\n';
+      std::cout << *iter;
     }
   }
   else
