@@ -36,6 +36,16 @@ void print(int n)
   std::cout << "Got: " << n << std::endl;
 }
 
+void print_comment(std::vector<char> const& comment)
+{
+  std::cout << "Got: \"";
+  for (std::vector<char>::const_iterator iter = comment.begin(); iter != comment.end(); ++iter)
+  {
+    std::cout << *iter;
+  }
+  std::cout << '"' << std::endl;
+}
+
 namespace grammar
 {
     namespace qi = boost::spirit::qi;
@@ -86,12 +96,21 @@ namespace grammar
 		| lit("[NO JIRA]")
 	    ;
 
+	    any_char_but_eol =
+	    	char_ - '\r' - '\n'
+	    ;
+
 	    comment =
-	        lit('(') >> *~lit(')') >> lit(')')
+	        (*(!(*blank >> eol) >> char_))[&print_comment]
+	    ;
+
+	    optional_comment =
+	          (+blank >> comment >> *blank)
+		| *blank
 	    ;
 
 	    contribution_entry =
-	        +blank >> jira_project_key >> *blank >> -comment >> *blank >> eol
+	        +blank >> jira_project_key >> optional_comment >> eol
 	    ;
 
 	    contributor =
@@ -99,7 +118,7 @@ namespace grammar
 	    ;
 
 	    junk_line =
-	        *(char_ - lit('\r') - lit('\n')) >> eol
+	        *any_char_but_eol >> eol
 	    ;
 
 	    leading_junk =
@@ -115,11 +134,13 @@ namespace grammar
         qi::rule<Iterator> contributor_full_name;
         qi::rule<Iterator> empty_line;
         qi::rule<Iterator> start;
+        qi::rule<Iterator> any_char_but_eol;
         qi::rule<Iterator> junk_line;
         qi::rule<Iterator> leading_junk;
 	qi::rule<Iterator> jira_project_key_prefix;
 	qi::rule<Iterator> jira_project_key;
 	qi::rule<Iterator> comment;
+	qi::rule<Iterator> optional_comment;
 	qi::rule<Iterator> contribution_entry;
 	qi::rule<Iterator> contributor;
         qi::rule<Iterator> file;
