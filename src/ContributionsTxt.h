@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file contribmerge.cc Main implementation.
+//! @file ContributionsTxt.h Implementation of class ContributionsTxt.
 //
 // Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
 // 
@@ -17,32 +17,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
-#include "sys.h"
-#include <iostream>
-#include <string>
-#include "debug.h"
-#endif
+#ifndef CONTRIBUTIONSTXT_H
+#define CONTRIBUTIONSTXT_H
 
-#include "contribmerge.h"
-#include "ContributionsTxt.h"
+#include "contrib_grammar.h"
+#include "InputRange.h"
+#include <exception>
 
-int main()
+class ParseError : public std::exception
 {
-  Debug(debug::init());
+  public:
+    // Constructor.
+    template<class InIt>
+      ParseError(InputRange<InIt> const& bounded_input_range);
+    // Destructor.
+    virtual ~ParseError() throw() { }
 
-  ContributionsTxt contributions_txt;
-  try
-  {
-    contributions_txt.parse("testinput");
-    std::cout << "Parsing succeeded\n";
-    std::cout << contributions_txt;
-  }
-  catch(ParseError& parse_error)
-  {
-    std::cout << "Parsing failed\n" << "Stopped at: \"" << parse_error.rest() << "\"\n";
-  }
+    std::string const& rest(void) const { return M_rest; }
 
-  return 0;
-}
+  private:
+    std::string M_rest;
+};
 
+class ContributionsTxt : private attributes::ContributionsTxt
+{
+  public:
+    void parse(std::string const& filename) throw(ParseError);
+    void print_on(std::ostream& os) const;
+};
+
+#endif // CONTRIBUTIONSTXT_H

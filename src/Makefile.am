@@ -10,8 +10,11 @@ CXXFLAGS =
 
 contribmerge_SOURCES = \
 	contribmerge.cc \
+	ContributionsTxt.cc \
 	ostream_operators.cc \
 	contribmerge.h \
+	ContributionsTxt.h \
+	InputRange.h \
 	ostream_operators.h \
 	contrib_grammar.h
 

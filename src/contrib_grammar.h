@@ -36,25 +36,29 @@
 namespace attributes {
 
 // Rule: jira_project_key
-struct JiraProjectKey {
+struct JiraProjectKey
+{
   std::string jira_project_key_prefix;		// "VWR"
   int issue_number;				// 123
 };
 
 // Rule: contribution_entry
-struct ContributionEntry {
+struct ContributionEntry
+{
   JiraProjectKey jira_project_key;		// "VWR-123"
   std::string comment;				// Optional (empty if there is none).
 };
 
 // Rule: contributor
-struct Contributor {
+struct Contributor
+{
   std::string full_name;			// "Firstname[ Lastname]"
   std::vector<ContributionEntry> contributions;
 };
 
 // The type I want to parse the data into:
-struct ContributionsTxt {
+struct ContributionsTxt
+{
   std::string header;				// Raw header text.
   std::vector<Contributor> contributors;
 };
@@ -88,6 +92,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 namespace grammar
 {
   using namespace attributes;
+  using attributes::ContributionsTxt;
 
   namespace qi = boost::spirit::qi;
   namespace fusion = boost::fusion;

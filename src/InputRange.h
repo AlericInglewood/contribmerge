@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file contribmerge.cc Main implementation.
+//! @file InputRange.h Implementation of class InputRange.
 //
 // Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
 // 
@@ -17,32 +17,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
-#include "sys.h"
-#include <iostream>
-#include <string>
-#include "debug.h"
-#endif
+#ifndef INPUTRANGE_H
+#define INPUTRANGE_H
 
-#include "contribmerge.h"
-#include "ContributionsTxt.h"
+#include <utility>
 
-int main()
+template<class InIt>
+struct InputRange
 {
-  Debug(debug::init());
+  typedef InIt iterator;
 
-  ContributionsTxt contributions_txt;
-  try
-  {
-    contributions_txt.parse("testinput");
-    std::cout << "Parsing succeeded\n";
-    std::cout << contributions_txt;
-  }
-  catch(ParseError& parse_error)
-  {
-    std::cout << "Parsing failed\n" << "Stopped at: \"" << parse_error.rest() << "\"\n";
-  }
+  std::pair<InIt, InIt const> M_range;
 
-  return 0;
-}
+  InputRange(InIt const& first, InIt const& last = InIt()) : M_range(first, last) { }
 
+  InIt& begin(void) { return M_range.first; }
+  InIt const& begin(void) const { return M_range.first; }
+  InIt const& end(void) const { return M_range.second; }
+  InIt end(void) { return M_range.second; }
+  bool empty(void) const { return M_range.first == M_range.second; }
+};
+
+#endif // INPUTRANGE_H

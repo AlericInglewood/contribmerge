@@ -24,32 +24,22 @@
 #include <iosfwd>		// Needed for std::ostream
 #endif
 
-#include "contrib_grammar.h"
+namespace attributes {
 
-std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
-{
-  os << key.jira_project_key_prefix;
-  if (key.issue_number)
-    os << '-' << key.issue_number;
-  return os;
-}
+  // Forward declarations.
+  struct JiraProjectKey;
+  struct ContributionEntry;
+  struct Contributor;
+  struct ContributionsTxt;
 
-std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry)
-{
-  os << entry.jira_project_key;
-  if (!entry.comment.empty())
-    os << ' ' << entry.comment;
-  return os;
-}
+} // namespace attributes
 
-std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor)
-{
-  os << contributor.full_name << "\\n\n";
-  for (std::vector<attributes::ContributionEntry>::const_iterator iter = contributor.contributions.begin(); iter != contributor.contributions.end(); ++iter)
-  {
-    os << '\t' << *iter << "\\n\n";
-  }
-  return os;
-}
+class ContributionsTxt;
+
+std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key);
+std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry);
+std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor);
+std::ostream& operator<<(std::ostream& os, attributes::ContributionsTxt const& contributions_txt);
+std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt);
 
 #endif // OSTREAM_OPERATORS_H

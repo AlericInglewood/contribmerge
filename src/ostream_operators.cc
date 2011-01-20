@@ -20,12 +20,57 @@
 #ifndef USE_PCH
 #include "sys.h"
 #include <iostream>
-#include <iomanip>
 #include "debug.h"
 #endif
+
+#include "ostream_operators.h"
+#include "ContributionsTxt.h"
 
 //-----------------------------------------------------------------------------
 //
 // ostream operator<<'s
 //
+
+std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
+{
+  os << key.jira_project_key_prefix;
+  if (key.issue_number)
+    os << '-' << key.issue_number;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry)
+{
+  os << entry.jira_project_key;
+  if (!entry.comment.empty())
+    os << ' ' << entry.comment;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor)
+{
+  os << contributor.full_name << "\\n\n";
+  for (std::vector<attributes::ContributionEntry>::const_iterator contribution = contributor.contributions.begin(); contribution != contributor.contributions.end(); ++contribution)
+  {
+    os << '\t' << *contribution << "\\n\n";
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, attributes::ContributionsTxt const& contributions_txt)
+{
+  os << "Header:=======================================\n" << contributions_txt.header << "==============================================\n\n";
+  for (std::vector<attributes::Contributor>::const_iterator contributor = contributions_txt.contributors.begin(); contributor != contributions_txt.contributors.end(); ++contributor)
+  {
+    os << *contributor;
+  }
+  os << "Number of Contributors: " << contributions_txt.contributors.size() << '\n';
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt)
+{
+  contributions_txt.print_on(os);
+  return os;
+}
 
