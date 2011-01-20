@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContribGrammar.h This file contains the declaration of class ContribGrammar.
+//! @file contrib_grammar.h This file contains the grammar definitions of contributions.txt.
 //
 // Copyright (C) 2011, by Aleric Inglewood & Boroondas Gupte
 // 

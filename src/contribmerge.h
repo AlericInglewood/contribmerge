@@ -20,7 +20,7 @@
 #ifndef CONTRIBMERGE_H
 #define CONTRIBMERGE_H
 
-#include "ContribGrammar.h"
+#include "contrib_grammar.h"
 #include "ostream_operators.h"
 
 extern char const* git_revision;

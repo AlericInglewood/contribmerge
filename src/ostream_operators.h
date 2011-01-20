@@ -24,7 +24,7 @@
 #include <iosfwd>		// Needed for std::ostream
 #endif
 
-#include "ContribGrammar.h"
+#include "contrib_grammar.h"
 
 std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
 {

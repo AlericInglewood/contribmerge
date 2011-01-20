@@ -13,7 +13,7 @@ contribmerge_SOURCES = \
 	ostream_operators.cc \
 	contribmerge.h \
 	ostream_operators.h \
-	ContribGrammar.h
+	contrib_grammar.h
 
 contribmerge_CXXFLAGS = @CXXFLAGS@ @CWD_FLAGS@
 contribmerge_LDADD = @LIBS@ @CWD_LIBS@
