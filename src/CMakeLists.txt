@@ -17,4 +17,4 @@ configure_file (
 # make it possible to find the generated sys.h
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_executable(contribmerge contribmerge.cc)
+add_executable(contribmerge contribmerge.cc ostream_operators.cc)
