@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContributionsTxt.h Implementation of class ContributionsTxt.
+//! @file exceptions.h Exception classes.
 //
 // Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
 // 
@@ -17,17 +17,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONTRIBUTIONSTXT_H
-#define CONTRIBUTIONSTXT_H
+#ifndef EXCEPTIONS_H
+#define EXCEPTIONS_H
 
-#include "contrib_grammar.h"
-#include "exceptions.h"
+#include "InputRange.h"
+#include <exception>
+#include <string>
 
-class ContributionsTxt : private attributes::ContributionsTxt
+class ParseError : public std::exception
 {
   public:
-    void parse(std::string const& filename) throw(ParseError);
-    void print_on(std::ostream& os) const;
+    // Constructor.
+    template<class InIt>
+      ParseError(InputRange<InIt> const& input_range);
+    // Destructor.
+    virtual ~ParseError() throw() { }
+
+    std::string const& rest(void) const { return M_rest; }
+
+  private:
+    std::string M_rest;
 };
 
-#endif // CONTRIBUTIONSTXT_H
+#endif // EXCEPTIONS_H
