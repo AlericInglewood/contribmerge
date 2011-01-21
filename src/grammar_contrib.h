@@ -22,12 +22,10 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
 #include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/spirit/include/phoenix_container.hpp>
-#include "grammar_attributes.h"
+#include "ContributionsTxt.h"
 
 namespace phoenix_utility {
 
@@ -48,38 +46,9 @@ boost::phoenix::function<raw_to_string_impl> const raw_to_string = raw_to_string
 
 } // namespace phoenix_utility
 
-BOOST_FUSION_ADAPT_STRUCT(
-    attributes::JiraProjectKey,
-    (std::string, jira_project_key_prefix)
-    (int, issue_number)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    attributes::ContributionEntry,
-    (attributes::JiraProjectKey, jira_project_key)
-    (std::string, comment)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    attributes::Contributor,
-    (std::string, raw_string)
-    (std::string, full_name)
-    (std::vector<attributes::ContributionEntry>, contributions)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    attributes::ContributionsTxt,
-    (std::string, header)
-    (std::vector<attributes::Contributor>, contributors)
-)
-
 namespace grammar
 {
-  using namespace attributes;
-  using attributes::ContributionsTxt;
-
   namespace qi = boost::spirit::qi;
-  namespace fusion = boost::fusion;
   namespace ascii = boost::spirit::ascii;
   namespace phoenix = boost::phoenix;
 
@@ -101,7 +70,6 @@ namespace grammar
       using qi::string;
       using qi::_val;
       using qi::_1;
-      using phoenix::at_c;
       using phoenix::bind;
       using phoenix::push_back;
       using phoenix_utility::raw_to_string;
@@ -201,8 +169,16 @@ namespace grammar
       // A jira project key.
       // The attribute is JiraProjectKey.
       jira_project_key =
-	    (jira_project_key_prefix >> '-' >> int_)
-	  | (string("[NO JIRA]") >> (int_ | eps))
+	    (
+		 jira_project_key_prefix	[bind(&JiraProjectKey::M_jira_project_key_prefix, _val) = _1]
+	      >> '-'
+	      >> int_				[bind(&JiraProjectKey::M_issue_number, _val) = _1]
+	    )
+          |
+	    (
+		 string("[NO JIRA]")		[bind(&JiraProjectKey::M_jira_project_key_prefix, _val) = _1]
+	      >> (int_ | eps)			[bind(&JiraProjectKey::M_issue_number, _val) = 0]
+	    )
       ;
 
       // Any character except eol characters.
@@ -223,8 +199,8 @@ namespace grammar
       // Attribute: ContributionEntry.
       contribution_entry =
 	  omit[+blank]
-       >> jira_project_key
-       >> comment
+       >> jira_project_key			[bind(&ContributionEntry::M_jira_project_key, _val) = _1]
+       >> comment				[bind(&ContributionEntry::M_comment, _val) = _1]
        >> newline;
       ;
 
@@ -237,12 +213,12 @@ namespace grammar
       contributor =
 	raw[
 
-	  contributor_full_name			 [bind(&Contributor::full_name, _val) = _1]
+	  contributor_full_name			 [bind(&Contributor::M_full_name, _val) = _1]
        >> newline
-       >> *contribution_entry			 [push_back(bind(&Contributor::contributions, _val), _1)]
+       >> *contribution_entry			 [push_back(bind(&Contributor::M_contributions, _val), _1)]
 
         // Store the raw data that we just gobbled up.
-	][bind(&Contributor::raw_string, _val) = raw_to_string(_1)]
+	][bind(&Contributor::M_raw_string, _val) = raw_to_string(_1)]
       ;
 
       // As an exception, the header line preserves trailing whitespace.
@@ -262,9 +238,9 @@ namespace grammar
       // The whole doc/contributions.txt file.
       // Attribute: ContributionsTxt.
       contributions_txt =
-	  header
+	  header				[bind(&ContributionsTxt::M_header, _val)  = _1]
        >> empty_line
-       >> +contributor
+       >> +contributor				[push_back(bind(&ContributionsTxt::M_contributors, _val), _1)]
        >> *empty_line
       ;
     }

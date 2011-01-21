@@ -24,22 +24,14 @@
 #include <iosfwd>		// Needed for std::ostream
 #endif
 
-namespace attributes {
-
-  // Forward declarations.
-  struct JiraProjectKey;
-  struct ContributionEntry;
-  struct Contributor;
-  struct ContributionsTxt;
-
-} // namespace attributes
-
+class JiraProjectKey;
+class ContributionEntry;
+class Contributor;
 class ContributionsTxt;
 
-std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key);
-std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry);
-std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor);
-std::ostream& operator<<(std::ostream& os, attributes::ContributionsTxt const& contributions_txt);
+std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key);
+std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry);
+std::ostream& operator<<(std::ostream& os, Contributor const& contributor);
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt);
 
 #endif // OSTREAM_OPERATORS_H

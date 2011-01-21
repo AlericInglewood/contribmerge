@@ -16,7 +16,6 @@ contribmerge_SOURCES = \
 	ContributionsTxt.h \
 	InputRange.h \
 	ostream_operators.h \
-	grammar_attributes.h \
 	grammar_contrib.h \
 	exceptions.h
 
