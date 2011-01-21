@@ -26,6 +26,7 @@
 #endif
 
 #include "ContributionsTxt.h"
+#include "grammar_contrib.h"
 #include "ostream_operators.h"
 
 template<class InIt>

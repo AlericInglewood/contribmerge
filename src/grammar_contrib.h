@@ -20,50 +20,33 @@
 #ifndef CONTRIBGRAMMAR_H
 #define CONTRIBGRAMMAR_H
 
-#ifndef USE_PCH
-#include "sys.h"
-#endif
-
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_bind.hpp>
+#include <boost/spirit/include/phoenix_container.hpp>
+#include "grammar_attributes.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
+namespace phoenix_utility {
 
-namespace attributes {
-
-// Rule: jira_project_key
-struct JiraProjectKey
+// Phoenix function converting the attribute type of raw[] (iterator_range<>) into a std::string.
+struct raw_to_string_impl
 {
-  std::string jira_project_key_prefix;		// "VWR"
-  int issue_number;				// 123
+  template<typename T1>
+  struct result { typedef std::string type; };
+
+  template<typename Iterator>
+  std::string operator()(boost::iterator_range<Iterator> const& r) const
+  {
+    return std::string(r.begin(), r.end());
+  }
 };
 
-// Rule: contribution_entry
-struct ContributionEntry
-{
-  JiraProjectKey jira_project_key;		// "VWR-123"
-  std::string comment;				// Optional (empty if there is none).
-};
+boost::phoenix::function<raw_to_string_impl> const raw_to_string = raw_to_string_impl();
 
-// Rule: contributor
-struct Contributor
-{
-  std::string full_name;			// "Firstname[ Lastname]"
-  std::vector<ContributionEntry> contributions;
-};
-
-// The type I want to parse the data into:
-struct ContributionsTxt
-{
-  std::string header;				// Raw header text.
-  std::vector<Contributor> contributors;
-};
-
-} // namespace attributes
+} // namespace phoenix_utility
 
 BOOST_FUSION_ADAPT_STRUCT(
     attributes::JiraProjectKey,
@@ -79,6 +62,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     attributes::Contributor,
+    (std::string, raw_string)
     (std::string, full_name)
     (std::vector<attributes::ContributionEntry>, contributions)
 )
@@ -97,12 +81,14 @@ namespace grammar
   namespace qi = boost::spirit::qi;
   namespace fusion = boost::fusion;
   namespace ascii = boost::spirit::ascii;
+  namespace phoenix = boost::phoenix;
 
   template <typename Iterator>
   struct contributions_txt_grammar : qi::grammar<Iterator, ContributionsTxt()>
   {
     contributions_txt_grammar() : contributions_txt_grammar::base_type(contributions_txt)
     {
+      using ascii::char_;
       using qi::alpha;
       using qi::alnum;
       using qi::blank;
@@ -113,7 +99,12 @@ namespace grammar
       using qi::omit;
       using qi::raw;
       using qi::string;
-      using ascii::char_;
+      using qi::_val;
+      using qi::_1;
+      using phoenix::at_c;
+      using phoenix::bind;
+      using phoenix::push_back;
+      using phoenix_utility::raw_to_string;
 
       // The first name of a contributor.
       // Attribute: std::string.
@@ -158,7 +149,9 @@ namespace grammar
       // Helper rule to find the start of the contributors list.
       // This rule has no attribute.
       start =
-	  empty_line >> contributor_full_name >> newline;
+	  empty_line
+       >> contributor_full_name
+       >> newline;
       ;
 
       // A jira project key prefix.
@@ -229,13 +222,27 @@ namespace grammar
       // Mandatory blank(s) followed by a jira project key, followed by a comment (that may be empty).
       // Attribute: ContributionEntry.
       contribution_entry =
-	  omit[+blank] >> jira_project_key >> comment >> newline;
+	  omit[+blank]
+       >> jira_project_key
+       >> comment
+       >> newline;
       ;
 
       // Name of a contributor, followed by a list of their contributions.
+      // This rule is a bit hairy since we store the same input data twice:
+      // As full name + a vector of contribution entries, and the raw input
+      // string that was used for that. This is not directly / cleanly
+      // supported by spirit::qi. So instead we use semantic actions and phoenix.
       // Attribute: Contributor.
       contributor =
-	  contributor_full_name >> newline >> *contribution_entry
+	raw[
+
+	  contributor_full_name			 [bind(&Contributor::full_name, _val) = _1]
+       >> newline
+       >> *contribution_entry			 [push_back(bind(&Contributor::contributions, _val), _1)]
+
+        // Store the raw data that we just gobbled up.
+	][bind(&Contributor::raw_string, _val) = raw_to_string(_1)]
       ;
 
       // As an exception, the header line preserves trailing whitespace.
@@ -252,9 +259,13 @@ namespace grammar
 	  raw[*(header_line - start)]
       ;
 
+      // The whole doc/contributions.txt file.
       // Attribute: ContributionsTxt.
       contributions_txt =
-	  header >> empty_line >> +contributor >> *empty_line
+	  header
+       >> empty_line
+       >> +contributor
+       >> *empty_line
       ;
     }
 

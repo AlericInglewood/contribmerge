@@ -16,7 +16,8 @@ contribmerge_SOURCES = \
 	ContributionsTxt.h \
 	InputRange.h \
 	ostream_operators.h \
-	contrib_grammar.h \
+	grammar_attributes.h \
+	grammar_contrib.h \
 	exceptions.h
 
 contribmerge_CXXFLAGS = @CXXFLAGS@ @CWD_FLAGS@

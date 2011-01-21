@@ -20,7 +20,7 @@
 #ifndef CONTRIBUTIONSTXT_H
 #define CONTRIBUTIONSTXT_H
 
-#include "contrib_grammar.h"
+#include "grammar_attributes.h"
 #include "exceptions.h"
 
 class ContributionsTxt : private attributes::ContributionsTxt
