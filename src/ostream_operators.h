@@ -27,11 +27,13 @@
 class JiraProjectKey;
 class ContributionEntry;
 class Contributor;
+class FullName;
 class ContributionsTxt;
 
 std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key);
 std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry);
 std::ostream& operator<<(std::ostream& os, Contributor const& contributor);
+std::ostream& operator<<(std::ostream& os, FullName const& full_name);
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt);
 
 #endif // OSTREAM_OPERATORS_H

@@ -20,8 +20,10 @@
 #ifndef CONTRIBUTIONSTXT_H
 #define CONTRIBUTIONSTXT_H
 
+#include <map>
 #include <vector>
 #include <string>
+#include <boost/algorithm/string/predicate.hpp>
 #include "exceptions.h"
 
 // Grammar rule: jira_project_key
@@ -51,26 +53,44 @@ class ContributionEntry
 };
 
 // Grammar rule: contributor.
-class Contributor
+class Contributions
 {
   private:
-    std::string M_raw_string;						// Raw contributor data.
-    std::string M_full_name;						// Firstname[ Lastname].
+    std::string M_raw_string;						// Raw contributor data (including full name).
     std::vector<ContributionEntry> M_contributions;			// Vector of ContributionEntry's.
 
   public:
     // Accessors.
     std::string const& raw_string(void) const { return M_raw_string; }
-    std::string const& full_name(void) const { return M_full_name; }
     std::vector<ContributionEntry> const& contributions(void) const { return M_contributions; }
+};
+
+class FullName
+{
+  private:
+    std::string M_full_name;						// Firstname[ Lastname].
+
+  public:
+    FullName(std::string const& full_name) : M_full_name(full_name) { }
+
+    // Accessors.
+    std::string const& full_name(void) const { return M_full_name; }
+
+  public:
+    struct CaseInsensitiveCompare {
+      bool operator()(FullName const& name1, FullName const& name2) const
+          { return boost::ilexicographical_compare(name1.M_full_name, name2.M_full_name); }
+    };
 };
 
 // Grammar rule: contributions_txt.
 class ContributionsTxt
 {
+  typedef std::map<FullName, Contributions, FullName::CaseInsensitiveCompare> contributors_map;
+
   private:
     std::string M_header;						// Raw header text.
-    std::vector<Contributor> M_contributors;				// Vector of Contributor's.
+    contributors_map M_contributors;					// Map of Contributors.
 
   public:
     void parse(std::string const& filename) throw(ParseError);
@@ -78,7 +98,7 @@ class ContributionsTxt
 
     // Accessors.
     std::string const& header(void) const { return M_header; }
-    std::vector<Contributor> const& contributors(void) const { return M_contributors; }
+    contributors_map const& contributors(void) const { return M_contributors; }
 };
 
 #endif // CONTRIBUTIONSTXT_H

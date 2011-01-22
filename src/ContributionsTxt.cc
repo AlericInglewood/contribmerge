@@ -64,3 +64,4 @@ void ContributionsTxt::print_on(std::ostream& os) const
 {
   os << *this;
 }
+

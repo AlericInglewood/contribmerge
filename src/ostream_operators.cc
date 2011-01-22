@@ -47,22 +47,29 @@ std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, Contributor const& contributor)
+std::ostream& operator<<(std::ostream& os, Contributions const& contributions)
 {
-  os << contributor.full_name() << "\\n\n";
-  for (std::vector<ContributionEntry>::const_iterator contribution = contributor.contributions().begin(); contribution != contributor.contributions().end(); ++contribution)
+  //os << "<RAW>" << contributions.raw_string() << "</RAW>\n";
+  for (std::vector<ContributionEntry>::const_iterator contribution = contributions.contributions().begin(); contribution != contributions.contributions().end(); ++contribution)
   {
-    os << '\t' << *contribution << "\\n\n";
+    os << '\t' << *contribution << "\n";
   }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, FullName const& full_name)
+{
+  os << full_name.full_name();
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt)
 {
   os << "Header:=======================================\n" << contributions_txt.header() << "==============================================\n\n";
-  for (std::vector<Contributor>::const_iterator contributor = contributions_txt.contributors().begin(); contributor != contributions_txt.contributors().end(); ++contributor)
+  for (std::map<FullName, Contributions>::const_iterator contributor = contributions_txt.contributors().begin(); contributor != contributions_txt.contributors().end(); ++contributor)
   {
-    os << *contributor;
+    os << contributor->first << '\n';
+    os << contributor->second;
   }
   os << "Number of Contributors: " << contributions_txt.contributors().size() << '\n';
   return os;
