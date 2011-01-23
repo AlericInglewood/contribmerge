@@ -54,7 +54,7 @@ void ContributionsTxt::parse(std::string const& filename) throw(ParseError)
   bool success = boost::spirit::qi::parse(
       range.begin(), range.end(),
       grammar::contributions_txt_grammar<parse_iterator_type>(),
-      static_cast<attributes::ContributionsTxt&>(*this));
+      *this);
 
   if (!(success && range.empty()))
     throw ParseError(range);
@@ -62,6 +62,6 @@ void ContributionsTxt::parse(std::string const& filename) throw(ParseError)
 
 void ContributionsTxt::print_on(std::ostream& os) const
 {
-  attributes::ContributionsTxt const& attributes(*this);
-  os << attributes;
+  os << *this;
 }
+

@@ -11,12 +11,13 @@ CXXFLAGS =
 contribmerge_SOURCES = \
 	contribmerge.cc \
 	ContributionsTxt.cc \
+	ContributionsTxt_operators.cc \
 	ostream_operators.cc \
 	contribmerge.h \
 	ContributionsTxt.h \
+	ContributionsTxt_operators.h \
 	InputRange.h \
 	ostream_operators.h \
-	grammar_attributes.h \
 	grammar_contrib.h \
 	exceptions.h
 

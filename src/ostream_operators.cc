@@ -31,46 +31,53 @@
 // ostream operator<<'s
 //
 
-std::ostream& operator<<(std::ostream& os, attributes::JiraProjectKey const& key)
+std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key)
 {
-  os << key.jira_project_key_prefix;
-  if (key.issue_number)
-    os << '-' << key.issue_number;
+  os << key.jira_project_key_prefix();
+  if (key.issue_number())
+    os << '-' << key.issue_number();
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, attributes::ContributionEntry const& entry)
+std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
 {
-  os << entry.jira_project_key;
-  if (!entry.comment.empty())
-    os << ' ' << entry.comment;
+  os << entry.jira_project_key();
+  if (!entry.comment().empty())
+    os << ' ' << entry.comment();
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, attributes::Contributor const& contributor)
+std::ostream& operator<<(std::ostream& os, Contributions const& contributions)
 {
-  os << contributor.full_name << "\\n\n";
-  for (std::vector<attributes::ContributionEntry>::const_iterator contribution = contributor.contributions.begin(); contribution != contributor.contributions.end(); ++contribution)
+  //os << "<RAW>" << contributions.raw_string() << "</RAW>\n";
+  for (std::vector<ContributionEntry>::const_iterator contribution = contributions.contributions().begin(); contribution != contributions.contributions().end(); ++contribution)
   {
-    os << '\t' << *contribution << "\\n\n";
+    os << '\t' << *contribution << "\n";
   }
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, attributes::ContributionsTxt const& contributions_txt)
+std::ostream& operator<<(std::ostream& os, FullName const& full_name)
 {
-  os << "Header:=======================================\n" << contributions_txt.header << "==============================================\n\n";
-  for (std::vector<attributes::Contributor>::const_iterator contributor = contributions_txt.contributors.begin(); contributor != contributions_txt.contributors.end(); ++contributor)
-  {
-    os << *contributor;
-  }
-  os << "Number of Contributors: " << contributions_txt.contributors.size() << '\n';
+  os << full_name.full_name();
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, Header const& header)
+{
+  os << header.as_string();
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt)
 {
-  contributions_txt.print_on(os);
+  os << "Header:=======================================\n" << contributions_txt.header() << "==============================================\n\n";
+  for (std::map<FullName, Contributions>::const_iterator contributor = contributions_txt.contributors().begin(); contributor != contributions_txt.contributors().end(); ++contributor)
+  {
+    os << contributor->first << '\n';
+    os << contributor->second;
+  }
+  os << "Number of Contributors: " << contributions_txt.contributors().size() << '\n';
   return os;
 }
 
