@@ -45,6 +45,20 @@ struct raw_to_string_impl
 
 boost::phoenix::function<raw_to_string_impl> const raw_to_string = raw_to_string_impl();
 
+// Phoenix function converting the std::string into a Header.
+struct string_to_header_impl
+{
+  template<typename T1>
+  struct result { typedef Header type; };
+
+  Header operator()(std::string const& s) const
+  {
+    return Header(s);
+  }
+};
+
+boost::phoenix::function<string_to_header_impl> const string_to_header = string_to_header_impl();
+
 } // namespace phoenix_utility
 
 namespace grammar
@@ -77,6 +91,7 @@ namespace grammar
 	using phoenix::push_back;
 	using phoenix::ref;
 	using phoenix_utility::raw_to_string;
+	using phoenix_utility::string_to_header;
 
 	// The first name of a contributor.
 	// Attribute: std::string.
@@ -242,7 +257,7 @@ namespace grammar
 	// The whole doc/contributions.txt file.
 	// Attribute: ContributionsTxt.
 	contributions_txt =
-	    header					[bind(&ContributionsTxt::M_header, _val)  = _1]
+	    header					[bind(&ContributionsTxt::M_header, _val)  = string_to_header(_1)]
 	 >> empty_line
 	 >> +contributor				[insert(bind(&ContributionsTxt::M_contributors, _val), construct<std::pair<std::string, Contributions> >(ref(full_name), _1))]
 	 >> *empty_line

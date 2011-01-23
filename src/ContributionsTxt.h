@@ -65,6 +65,23 @@ class Contributions
     std::vector<ContributionEntry> const& contributions(void) const { return M_contributions; }
 };
 
+class Header
+{
+  private:
+    std::string M_header;						// Raw header data.
+
+  public:
+    Header(void) { }
+    Header(std::string const& header) : M_header(header) { }
+
+    // Accessors.
+    std::string const& as_string(void) const { return M_header; }
+
+    // Operator.
+    friend bool operator==(Header const& h1, Header const& h2) { return h1.M_header == h2.M_header; }
+    friend bool operator!=(Header const& h1, Header const& h2) { return h1.M_header != h2.M_header; }
+};
+
 class FullName
 {
   private:
@@ -77,19 +94,26 @@ class FullName
     std::string const& full_name(void) const { return M_full_name; }
 
   public:
+    typedef std::pair<FullName const, Contributions> contributors_map_value_type;
     struct CaseInsensitiveCompare {
-      bool operator()(FullName const& name1, FullName const& name2) const
-          { return boost::ilexicographical_compare(name1.M_full_name, name2.M_full_name); }
+      bool operator()(FullName const& name1, FullName const& name2) const;
+      bool operator()(contributors_map_value_type const& name1, contributors_map_value_type const& name2) const
+          { return operator()(name1.first, name2.first); }
     };
 };
+
+// Forward declaration.
+template<int ctop>
+struct ContributionsTxtOperator;
 
 // Grammar rule: contributions_txt.
 class ContributionsTxt
 {
-  typedef std::map<FullName, Contributions, FullName::CaseInsensitiveCompare> contributors_map;
+  public:
+    typedef std::map<FullName, Contributions, FullName::CaseInsensitiveCompare> contributors_map;
 
   private:
-    std::string M_header;						// Raw header text.
+    Header M_header;							// Raw header text.
     contributors_map M_contributors;					// Map of Contributors.
 
   public:
@@ -97,8 +121,12 @@ class ContributionsTxt
     void print_on(std::ostream& os) const;
 
     // Accessors.
-    std::string const& header(void) const { return M_header; }
+    Header const& header(void) const { return M_header; }
     contributors_map const& contributors(void) const { return M_contributors; }
+
+    // Assignment operators.
+    template<int ctop>
+    ContributionsTxt& operator=(ContributionsTxtOperator<ctop> const& args);
 };
 
 #endif // CONTRIBUTIONSTXT_H

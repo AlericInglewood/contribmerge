@@ -63,6 +63,12 @@ std::ostream& operator<<(std::ostream& os, FullName const& full_name)
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, Header const& header)
+{
+  os << header.as_string();
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt)
 {
   os << "Header:=======================================\n" << contributions_txt.header() << "==============================================\n\n";

@@ -14,6 +14,7 @@ contribmerge_SOURCES = \
 	ostream_operators.cc \
 	contribmerge.h \
 	ContributionsTxt.h \
+	ContributionsTxt_operators.h \
 	InputRange.h \
 	ostream_operators.h \
 	grammar_contrib.h \

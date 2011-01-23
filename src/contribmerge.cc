@@ -25,22 +25,31 @@
 
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
+#include "ContributionsTxt_operators.h"
 
 int main()
 {
   Debug(debug::init());
 
-  ContributionsTxt contributions_txt;
+  ContributionsTxt contributions_txt1;
+  ContributionsTxt contributions_txt2;
   try
   {
-    contributions_txt.parse("testinput");
+    contributions_txt1.parse("testinput1");
+    contributions_txt2.parse("testinput2");
     std::cout << "Parsing succeeded\n";
-    std::cout << contributions_txt;
   }
   catch(ParseError& parse_error)
   {
     std::cout << "Parsing failed\n" << "Stopped at: \"" << parse_error.rest() << "\"\n";
+    exit(1);
   }
+
+  ContributionsTxt contributions_txt3;
+
+  contributions_txt3 = contributions_txt1;
+  contributions_txt3 = contributions_txt3 ^ contributions_txt2;
+  std::cout << contributions_txt3 << std::endl;
 
   return 0;
 }
