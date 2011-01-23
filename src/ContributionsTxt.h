@@ -63,6 +63,9 @@ class Contributions
     // Accessors.
     std::string const& raw_string(void) const { return M_raw_string; }
     std::vector<ContributionEntry> const& contributions(void) const { return M_contributions; }
+
+  public:
+    static bool raw_compare(Contributions const& contribution1, Contributions const& contribution2);
 };
 
 class Header
@@ -94,6 +97,9 @@ class FullName
     std::string const& full_name(void) const { return M_full_name; }
 
   public:
+    friend bool operator==(FullName const& name1, FullName const& name2) { return name1.M_full_name == name2.M_full_name; }
+    friend bool operator!=(FullName const& name1, FullName const& name2) { return name1.M_full_name != name2.M_full_name; }
+
     typedef std::pair<FullName const, Contributions> contributors_map_value_type;
     struct CaseInsensitiveCompare {
       bool operator()(FullName const& name1, FullName const& name2) const;
@@ -102,9 +108,22 @@ class FullName
     };
 };
 
-// Forward declaration.
-template<int ctop>
-struct ContributionsTxtOperator;
+enum ctop_types {
+  ctop_intersection,		// Intersection of raw-equal entries.
+  ctop_union,			// Union of names.
+  ctop_difference,		// Names in first not in last.
+  ctop_symmetric_difference	// Names only in first or last.
+};
+
+class ContributionsTxt;
+
+template<ctop_types ctop>
+struct ContributionsTxtOperator
+{
+  ContributionsTxt const& M_ct1;
+  ContributionsTxt const& M_ct2;
+  ContributionsTxtOperator(ContributionsTxt const& ct1, ContributionsTxt const& ct2) : M_ct1(ct1), M_ct2(ct2) { }
+};
 
 // Grammar rule: contributions_txt.
 class ContributionsTxt
@@ -125,8 +144,48 @@ class ContributionsTxt
     contributors_map const& contributors(void) const { return M_contributors; }
 
     // Assignment operators.
-    template<int ctop>
-    ContributionsTxt& operator=(ContributionsTxtOperator<ctop> const& args);
+    template<ctop_types ctop> ContributionsTxt& operator=(ContributionsTxtOperator<ctop> const& args);
+
+  public:
+    struct full_compare {
+      bool operator()(contributors_map::value_type const& contributor1, contributors_map::value_type const& contributor2) const;
+    };
+
+    // Operators.
+    ContributionsTxt& operator+=(ContributionsTxt const& arg1) throw(MergeFailure);
+    ContributionsTxt& operator&=(ContributionsTxt const& arg1) throw();
+    ContributionsTxt& operator-=(ContributionsTxt const& arg1) throw();
+    ContributionsTxt& operator^=(ContributionsTxt const& arg1) throw();
 };
+
+// Forward declarations of specializations.
+template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_intersection> const& args);
+template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_union> const& args);
+template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_difference> const& args);
+template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_symmetric_difference> const& args);
+
+// Union of names. If raw value of equal names differs, throw MergeFailure.
+inline ContributionsTxt& ContributionsTxt::operator+=(ContributionsTxt const& arg1) throw(MergeFailure)
+{
+  return *this = ContributionsTxtOperator<ctop_union>(*this, arg1);
+}
+
+// Intersection of raw data. Only keep contributors that have no changes whatsoever.
+inline ContributionsTxt& ContributionsTxt::operator&=(ContributionsTxt const& arg1) throw()
+{
+  return *this = ContributionsTxtOperator<ctop_intersection>(*this, arg1);
+}
+
+// Name set difference. Remove all entries with the same name (raw differences are ignored).
+inline ContributionsTxt& ContributionsTxt::operator-=(ContributionsTxt const& arg1) throw()
+{
+  return *this = ContributionsTxtOperator<ctop_difference>(*this, arg1);
+}
+
+// Symmetric name set difference. Remove all entries with the same name (raw differences are ignored), but add new names.
+inline ContributionsTxt& ContributionsTxt::operator^=(ContributionsTxt const& arg1) throw()
+{
+  return *this = ContributionsTxtOperator<ctop_symmetric_difference>(*this, arg1);
+}
 
 #endif // CONTRIBUTIONSTXT_H

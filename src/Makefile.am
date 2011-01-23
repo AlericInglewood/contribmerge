@@ -3,6 +3,8 @@
 AUTOMAKE_OPTIONS = foreign
 EXTRA_DIST = pch-source.h
 
+SUBDIRS = . tests
+
 bin_PROGRAMS = contribmerge
 BUILT_SOURCES =
 DEFS = @DEFS@

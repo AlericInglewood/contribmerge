@@ -31,12 +31,14 @@ int main()
 {
   Debug(debug::init());
 
-  ContributionsTxt contributions_txt1;
-  ContributionsTxt contributions_txt2;
+  ContributionsTxt base;
+  ContributionsTxt left;
+  ContributionsTxt right;
   try
   {
-    contributions_txt1.parse("testinput1");
-    contributions_txt2.parse("testinput2");
+    base.parse("base");
+    left.parse("left");
+    right.parse("right");
     std::cout << "Parsing succeeded\n";
   }
   catch(ParseError& parse_error)
@@ -44,12 +46,6 @@ int main()
     std::cout << "Parsing failed\n" << "Stopped at: \"" << parse_error.rest() << "\"\n";
     exit(1);
   }
-
-  ContributionsTxt contributions_txt3;
-
-  contributions_txt3 = contributions_txt1;
-  contributions_txt3 = contributions_txt3 ^ contributions_txt2;
-  std::cout << contributions_txt3 << std::endl;
 
   return 0;
 }

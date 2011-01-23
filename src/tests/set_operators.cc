@@ -64,6 +64,10 @@ std::ostream& operator<<(std::ostream& os, std::map<K, V, P, A> const& m)
   return os;
 }
 
+struct Pred {
+  bool operator()(std::pair<int const, char> const& a, std::pair<int const, char> const& b) const { return a.first < b.first; }
+};
+
 int main()
 {
   using namespace boost::spirit;
@@ -72,14 +76,14 @@ int main()
 
   typedef char const* Iterator;
   Iterator data[2] = {
-      "1a    3c 4d 5e",
+      "1A    3C 4D 5E",
       "1a 2b    4d     6f"
   };
 
   typedef std::map<int, char> Result;
 
   uint_parser<int, 10, 1, 1> one_digit;
-  rule<Iterator, std::pair<int, char>()> pair = one_digit >> char_("a-f");
+  rule<Iterator, std::pair<int, char>()> pair = one_digit >> char_("a-fA-F");
   rule<Iterator, Result()> grammar = pair % +blank;
 
   Result result[3];
@@ -95,17 +99,20 @@ int main()
   }
 
   Result output;
-  std::set_difference(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()));
+  std::set_difference(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()), Pred());
   std::cout << "Difference:   " << output << std::endl;
   output.clear();
-  std::set_intersection(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()));
+  std::set_intersection(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()), Pred());
   std::cout << "Intersection: " << output << std::endl;
   output.clear();
-  std::set_symmetric_difference(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()));
+  std::set_symmetric_difference(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()), Pred());
   std::cout << "Sym. diff:    " << output << std::endl;
   output.clear();
-  std::set_union(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()));
-  std::cout << "Union:        " << output << std::endl;
+  std::set_union(result[0].begin(), result[0].end(), result[1].begin(), result[1].end(), std::inserter(output, output.begin()), Pred());
+  std::cout << "Union(0,1):   " << output << std::endl;
+  output.clear();
+  std::set_union(result[1].begin(), result[1].end(), result[0].begin(), result[0].end(), std::inserter(output, output.begin()), Pred());
+  std::cout << "Union(1,0):   " << output << std::endl;
 
   return 0;
 }

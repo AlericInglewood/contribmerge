@@ -87,6 +87,7 @@ CW_CONFIG_FILE([src], [sys.h])
 dnl Output the other configuration files.
 AC_CONFIG_FILES(
         [Makefile]
-        [src/Makefile])
+        [src/Makefile]
+        [src/tests/Makefile])
 
 AC_OUTPUT

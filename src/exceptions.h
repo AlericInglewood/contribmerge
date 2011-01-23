@@ -39,4 +39,13 @@ class ParseError : public std::exception
     std::string M_rest;
 };
 
+class MergeFailure : public std::exception
+{
+  public:
+    // Constructor.
+    MergeFailure(void) { }
+    // Destructor.
+    virtual ~MergeFailure() throw() { }
+};
+
 #endif // EXCEPTIONS_H

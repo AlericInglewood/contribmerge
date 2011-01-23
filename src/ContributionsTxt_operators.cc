@@ -24,6 +24,23 @@
 #endif
 
 #include "ContributionsTxt_operators.h"
+#include "ostream_operators.h"
+
+bool Contributions::raw_compare(Contributions const& contribution1, Contributions const& contribution2)
+{
+  bool result = contribution1.raw_string() < contribution2.raw_string();
+  return result;
+}
+
+bool ContributionsTxt::full_compare::operator()(contributors_map::value_type const& contributor1, contributors_map::value_type const& contributor2) const
+{
+  static FullName::CaseInsensitiveCompare name_compare;
+  if (name_compare(contributor1.first, contributor2.first))
+    return true;
+  if (name_compare(contributor2.first, contributor1.first))
+    return false;
+  return Contributions::raw_compare(contributor1.second, contributor2.second);
+}
 
 bool FullName::CaseInsensitiveCompare::operator()(FullName const& name1, FullName const& name2) const
 {
@@ -39,14 +56,48 @@ bool FullName::CaseInsensitiveCompare::operator()(FullName const& name1, FullNam
 }
 
 template<>
-ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_or> const&)
+ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_intersection> const& args)
 {
-  return *this;
-}
-
-template<>
-ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_and> const&)
-{
+  ContributionsTxt const* arg1 = &args.M_ct1;
+  ContributionsTxt const* arg2 = &args.M_ct2;
+  if (arg1 == arg2)
+  {
+    if (arg1 != this)
+      M_contributors = arg1->M_contributors;
+  }
+  else if (arg1 == this || arg2 == this)
+  {
+    if (arg2 == this)
+      std::swap(arg1, arg2);
+    full_compare is_less;
+    contributors_map::iterator i1 = M_contributors.begin();
+    contributors_map::const_iterator i2 = arg2->M_contributors.begin();
+    while (i1 != M_contributors.end() && i2 != arg2->M_contributors.end())
+    {
+      if (is_less(*i1, *i2))
+	M_contributors.erase(i1++);
+      else if (is_less(*i2, *i1))
+	++i2;
+      else
+      {
+	++i1;
+	++i2;
+      }
+    }
+    if (i1 != M_contributors.end())
+      M_contributors.erase(i1, M_contributors.end());
+  }
+  else
+  {
+    M_contributors.clear();
+    std::set_intersection(
+	arg1->M_contributors.begin(),
+	arg1->M_contributors.end(),
+	arg2->M_contributors.begin(),
+	arg2->M_contributors.end(),
+	std::inserter(M_contributors, M_contributors.begin()),
+	full_compare());
+  }
   return *this;
 }
 
@@ -73,10 +124,10 @@ ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_unio
   {
     M_contributors.clear();
     std::set_union(
-	arg1->M_contributors.begin(),
-	arg1->M_contributors.end(),
 	arg2->M_contributors.begin(),
 	arg2->M_contributors.end(),
+	arg1->M_contributors.begin(),
+	arg1->M_contributors.end(),
 	std::inserter(M_contributors, M_contributors.begin()),
 	contributors_map::key_compare());
   }
@@ -157,6 +208,8 @@ ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_symm
 	++i2;
       }
     }
+    if (i2 != arg2->M_contributors.end())
+      M_contributors.insert(i2, arg2->M_contributors.end());
   }
   else
   {

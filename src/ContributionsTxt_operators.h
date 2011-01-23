@@ -32,22 +32,6 @@ inline bool operator!=(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
   return ct1.header() != ct2.header();
 }
 
-enum ctop_types {
-  ctop_or,
-  ctop_and,
-  ctop_union,
-  ctop_difference,
-  ctop_symmetric_difference
-};
-
-template<int ctop>
-struct ContributionsTxtOperator
-{
-  ContributionsTxt const& M_ct1;
-  ContributionsTxt const& M_ct2;
-  ContributionsTxtOperator(ContributionsTxt const& ct1, ContributionsTxt const& ct2) : M_ct1(ct1), M_ct2(ct2) { }
-};
-
 template<class Container>
 struct Inserter {
   std::insert_iterator<Container> M_inserter;
@@ -55,14 +39,9 @@ struct Inserter {
   void operator()(typename Container::value_type const& value) { *M_inserter = value; }
 };
 
-inline ContributionsTxtOperator<ctop_or> operator|(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
+inline ContributionsTxtOperator<ctop_intersection> operator&(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
 {
-  return ContributionsTxtOperator<ctop_or>(ct1, ct2);
-}
-
-inline ContributionsTxtOperator<ctop_and> operator&(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ContributionsTxtOperator<ctop_and>(ct1, ct2);
+  return ContributionsTxtOperator<ctop_intersection>(ct1, ct2);
 }
 
 inline ContributionsTxtOperator<ctop_union> operator+(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
