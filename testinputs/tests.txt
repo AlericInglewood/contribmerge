@@ -1,0 +1,12 @@
+#base                   left                            right                   desired result                  (comments)
+base.txt                whitespace_error.txt            base.txt                result1.txt                     # avoid introducing errors by merge, but replacing one error with another is ok
+base.txt                whitespace_correction.txt       base.txt                whitespace_correction.txt       # (trivial)
+base.txt                whitespace_correction.txt       whitespace_error.txt    whitespace_correction.txt       # let corrections win over errors
+base.txt                whitespace_error.txt            whitespace_error.txt    whitespace_error.txt            # if both branches agree about introducing errors, who are we to disagree?
+base.txt                added_issue.txt                 base.txt                added_issue.txt                 # (trivial)
+added_issue.txt         added_issue.txt                 base.txt                base.txt                        # (trivial removal)
+fc7e5dcf3059.txt        base.txt                        VWR-24487.txt           added_issue.txt                 # real world example
+fc7e5dcf3059.txt        VWR-24487.txt                   e1027197799b.txt        non-conflict_merge.txt          # another real world example
+base.txt                DN-9999798.txt                  DN-9999978.txt          DN-merged.txt                   # two conflicting additions (just need sorting)
+DN-merged.txt           DN-9999798.txt                  DN-9999978.txt          base.txt                        # two nearby removals
+DN-9999798.txt          DN-merged.txt                   base.txt                DN-9999978.txt                  # one added, another removed
