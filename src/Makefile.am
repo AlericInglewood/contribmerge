@@ -11,6 +11,7 @@ CXXFLAGS =
 contribmerge_SOURCES = \
 	contribmerge.cc \
 	ContributionsTxt.cc \
+	ContributionsTxt_operators.cc \
 	ostream_operators.cc \
 	contribmerge.h \
 	ContributionsTxt.h \

@@ -44,19 +44,6 @@ ParseError::ParseError(InputRange<InIt> const& bounded_input_range)
   }
 }
 
-bool FullName::CaseInsensitiveCompare::operator()(FullName const& name1, FullName const& name2) const
-{
-  std::string const& n1(name1.M_full_name);
-  std::string const& n2(name2.M_full_name);
-  if (n1 == n2)
-    return false;
-  if (boost::ilexicographical_compare(n1, n2))
-    return true;
-  if (boost::ilexicographical_compare(n2, n1))
-    return false;
-  return boost::lexicographical_compare(n1, n2);
-}
-
 void ContributionsTxt::parse(std::string const& filename) throw(ParseError)
 {
   std::ifstream infile(filename.c_str());
