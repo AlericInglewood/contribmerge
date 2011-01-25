@@ -28,6 +28,7 @@
 #include "ContributionsTxt.h"
 #include "grammar_contrib.h"
 #include "ostream_operators.h"
+#include "ContributionsTxt_operators.h"
 
 template<class InIt>
 ParseError::ParseError(InputRange<InIt> const& bounded_input_range)
@@ -44,7 +45,29 @@ ParseError::ParseError(InputRange<InIt> const& bounded_input_range)
   }
 }
 
-void ContributionsTxt::parse(std::string const& filename) throw(ParseError)
+Header::Header(ContributionsTxt const& contributions_txt) : M_header(contributions_txt.header().as_string())
+{
+}
+
+Header& Header::operator=(ContributionsTxt const& contributions_txt)
+{
+  M_header = contributions_txt.header().as_string();
+  return *this;
+}
+
+FormattedContributions::FormattedContributions(std::vector<ContributionEntry> const& vec)
+{
+  Inserter<contributions_type> insert_into_contributions(M_contributions);
+  for_each(vec.begin(), vec.end(), insert_into_contributions);
+}
+
+Contributions::Contributions(FormattedContributions const& fc)
+{
+  Inserter<contributions_type> insert_into_contributions(M_contributions);
+  for_each(fc.contributions().begin(), fc.contributions().end(), insert_into_contributions);
+}
+
+ContributionsTxt::ContributionsTxt(std::string const& filename) throw(ParseError) : M_header(std::string())
 {
   std::ifstream infile(filename.c_str());
   typedef boost::spirit::istream_iterator parse_iterator_type;
@@ -64,4 +87,3 @@ void ContributionsTxt::print_on(std::ostream& os) const
 {
   os << *this;
 }
-

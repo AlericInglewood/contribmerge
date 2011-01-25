@@ -23,6 +23,8 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <set>
+#include <iterator>
 #include <boost/algorithm/string/predicate.hpp>
 #include "exceptions.h"
 
@@ -37,6 +39,15 @@ class JiraProjectKey
     // Accessors.
     std::string const& jira_project_key_prefix(void) const { return M_jira_project_key_prefix; }
     int issue_number(void) const { return M_issue_number; }
+
+    friend bool operator<(JiraProjectKey const& jpk1, JiraProjectKey const& jpk2)
+    {
+      if (jpk1.M_jira_project_key_prefix < jpk2.M_jira_project_key_prefix)
+	return true;
+      else if (jpk2.M_jira_project_key_prefix < jpk1.M_jira_project_key_prefix)
+	return false;
+      return jpk1.M_issue_number < jpk2.M_issue_number;
+    }
 };
 
 // Grammar rule: contribution_entry
@@ -52,21 +63,58 @@ class ContributionEntry
     std::string const& comment(void) const { return M_comment; }
 };
 
+struct ContributionEntryCompare {
+  bool operator()(ContributionEntry const& ce1, ContributionEntry const& ce2)
+  {
+    return ce1.jira_project_key() < ce2.jira_project_key();
+  }
+};
+
+class FormattedContributions
+{
+  public:
+    typedef std::set<ContributionEntry, ContributionEntryCompare> contributions_type;
+
+  private:
+    contributions_type M_contributions;
+
+  public:
+    FormattedContributions(void) { }
+    FormattedContributions(std::vector<ContributionEntry> const& vec);
+
+    std::insert_iterator<contributions_type> get_inserter(void) { return std::inserter(M_contributions, M_contributions.begin()); }
+
+    // Accessors.
+    contributions_type const& contributions(void) const { return M_contributions; }
+};
+
 // Grammar rule: contributor.
 class Contributions
 {
+  public:
+    typedef std::vector<ContributionEntry> contributions_type;
+
   private:
-    std::string M_raw_string;						// Raw contributor data (including full name).
-    std::vector<ContributionEntry> M_contributions;			// Vector of ContributionEntry's.
+    std::string M_raw_string;				// Raw contributor data (including full name).
+    contributions_type M_contributions;			// Vector of ContributionEntry's.
 
   public:
+    Contributions(void) { }
+    Contributions(FormattedContributions const& fc);
+
+    std::insert_iterator<contributions_type> get_inserter(void) { return std::inserter(M_contributions, M_contributions.begin()); }
+
     // Accessors.
     std::string const& raw_string(void) const { return M_raw_string; }
-    std::vector<ContributionEntry> const& contributions(void) const { return M_contributions; }
+    contributions_type const& contributions(void) const { return M_contributions; }
 
   public:
     static bool raw_compare(Contributions const& contribution1, Contributions const& contribution2);
+
+    operator FormattedContributions(void) const { return M_contributions; }
 };
+
+class ContributionsTxt;
 
 class Header
 {
@@ -74,8 +122,9 @@ class Header
     std::string M_header;						// Raw header data.
 
   public:
-    Header(void) { }
-    Header(std::string const& header) : M_header(header) { }
+    explicit Header(std::string const& header) : M_header(header) { }
+    explicit Header(ContributionsTxt const&);
+    Header& operator=(ContributionsTxt const&);
 
     // Accessors.
     std::string const& as_string(void) const { return M_header; }
@@ -125,6 +174,8 @@ struct ContributionsTxtOperator
   ContributionsTxtOperator(ContributionsTxt const& ct1, ContributionsTxt const& ct2) : M_ct1(ct1), M_ct2(ct2) { }
 };
 
+template<class Container> struct Inserter;
+
 // Grammar rule: contributions_txt.
 class ContributionsTxt
 {
@@ -136,8 +187,11 @@ class ContributionsTxt
     contributors_map M_contributors;					// Map of Contributors.
 
   public:
-    void parse(std::string const& filename) throw(ParseError);
+    ContributionsTxt(std::string const& filename) throw(ParseError);
+    explicit ContributionsTxt(Header const& header) : M_header(header) { }
     void print_on(std::ostream& os) const;
+
+    Inserter<contributors_map> get_inserter(void);
 
     // Accessors.
     Header const& header(void) const { return M_header; }
@@ -146,16 +200,27 @@ class ContributionsTxt
     // Assignment operators.
     template<ctop_types ctop> ContributionsTxt& operator=(ContributionsTxtOperator<ctop> const& args);
 
+    // Corresponding constructors.
+    template<ctop_types ctop> ContributionsTxt(ContributionsTxtOperator<ctop> const& args);
+
   public:
     struct full_compare {
       bool operator()(contributors_map::value_type const& contributor1, contributors_map::value_type const& contributor2) const;
     };
 
     // Operators.
-    ContributionsTxt& operator+=(ContributionsTxt const& arg1) throw(MergeFailure);
+    ContributionsTxt& operator=(Header const& header) throw() { M_header = header; return *this; }
+    ContributionsTxt& operator=(ContributionsTxt const& ct) throw() { M_contributors = ct.M_contributors; return *this; }
+
+    ContributionsTxt& operator+=(ContributionsTxt const& arg1) throw();
     ContributionsTxt& operator&=(ContributionsTxt const& arg1) throw();
     ContributionsTxt& operator-=(ContributionsTxt const& arg1) throw();
     ContributionsTxt& operator^=(ContributionsTxt const& arg1) throw();
+
+    friend bool operator==(ContributionsTxt const& ct, Header const& header) { return ct.M_header == header; }
+    friend bool operator==(Header const& header, ContributionsTxt const& ct) { return header == ct.M_header; }
+    friend bool operator!=(ContributionsTxt const& ct, Header const& header) { return ct.M_header != header; }
+    friend bool operator!=(Header const& header, ContributionsTxt const& ct) { return header != ct.M_header; }
 };
 
 // Forward declarations of specializations.
@@ -164,8 +229,10 @@ template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperato
 template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_difference> const& args);
 template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_symmetric_difference> const& args);
 
+template<ctop_types ctop> inline ContributionsTxt::ContributionsTxt(ContributionsTxtOperator<ctop> const& args) : M_header(std::string()) { *this = args; }
+
 // Union of names. If raw value of equal names differs, throw MergeFailure.
-inline ContributionsTxt& ContributionsTxt::operator+=(ContributionsTxt const& arg1) throw(MergeFailure)
+inline ContributionsTxt& ContributionsTxt::operator+=(ContributionsTxt const& arg1) throw()
 {
   return *this = ContributionsTxtOperator<ctop_union>(*this, arg1);
 }

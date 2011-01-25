@@ -158,7 +158,7 @@ ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_diff
   }
   else if (arg2 == this)
   {
-    ContributionsTxt result;
+    ContributionsTxt result(M_header);
     std::set_difference(
 	arg1->M_contributors.begin(),
 	arg1->M_contributors.end(),

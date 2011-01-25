@@ -81,3 +81,10 @@ std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, std::pair<const FullName, Contributions> const& val)
+{
+  os << val.first << '\n';
+  os << val.second;
+  return os;
+}
+

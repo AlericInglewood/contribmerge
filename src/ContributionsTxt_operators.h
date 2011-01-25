@@ -39,6 +39,11 @@ struct Inserter {
   void operator()(typename Container::value_type const& value) { *M_inserter = value; }
 };
 
+inline Inserter<ContributionsTxt::contributors_map> ContributionsTxt::get_inserter(void)
+{
+  return Inserter<contributors_map>(M_contributors);
+}
+
 inline ContributionsTxtOperator<ctop_intersection> operator&(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
 {
   return ContributionsTxtOperator<ctop_intersection>(ct1, ct2);

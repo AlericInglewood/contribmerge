@@ -51,16 +51,269 @@ int main()
 {
   Debug(debug::init());
 
-  ContributionsTxt base;
-  ContributionsTxt left;
-  ContributionsTxt right;
   try
   {
     std::string testinputsdir = STRINGIFY(SRCDIR) "/../../testinputs";
-    base.parse(testinputsdir + "/CTop_base.txt");
-    left.parse(testinputsdir + "/CTop_left.txt");
-    right.parse(testinputsdir + "/CTop_right.txt");
+    ContributionsTxt base(testinputsdir + "/CTop_base.txt");
+    ContributionsTxt left(testinputsdir + "/CTop_left.txt");
+    ContributionsTxt right(testinputsdir + "/CTop_right.txt");
     std::cout << "Parsing succeeded\n";
+
+    ContributionsTxt result1(base.header()), result2(base.header());
+
+    result1 = base + left;
+    result2 = base;
+    result2 += left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = base + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left + base;
+    result2 = left;
+    result2 += base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = left + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base - left;
+    result2 = base;
+    result2 -= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = base - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left - base;
+    result2 = left;
+    result2 -= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = left - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base ^ left;
+    result2 = base;
+    result2 ^= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = base ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left ^ base;
+    result2 = left;
+    result2 ^= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = left ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base & left;
+    result2 = base;
+    result2 &= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = base & result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left & base;
+    result2 = left;
+    result2 &= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = left & result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base + right;
+    result2 = base;
+    result2 += right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = base + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right + base;
+    result2 = right;
+    result2 += base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = right + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base - right;
+    result2 = base;
+    result2 -= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = base - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right - base;
+    result2 = right;
+    result2 -= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = right - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base ^ right;
+    result2 = base;
+    result2 ^= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = base ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right ^ base;
+    result2 = right;
+    result2 ^= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = right ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = base & right;
+    result2 = base;
+    result2 &= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = base & result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right & base;
+    result2 = right;
+    result2 &= base;
+    assert(names_is_equal(result1, result2));
+    result2 = base;
+    result2 = right & result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left + right;
+    result2 = left;
+    result2 += right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = left + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right + left;
+    result2 = right;
+    result2 += left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = right + result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left - right;
+    result2 = left;
+    result2 -= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = left - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right - left;
+    result2 = right;
+    result2 -= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = right - result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left ^ right;
+    result2 = left;
+    result2 ^= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = left ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right ^ left;
+    result2 = right;
+    result2 ^= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = right ^ result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = left & right;
+    result2 = left;
+    result2 &= right;
+    assert(names_is_equal(result1, result2));
+    result2 = right;
+    result2 = left & result2;
+    assert(names_is_equal(result1, result2));
+
+    result1 = right & left;
+    result2 = right;
+    result2 &= left;
+    assert(names_is_equal(result1, result2));
+    result2 = left;
+    result2 = right & result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = left;
+    result1 = result2 + left;
+    result2 += result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = right;
+    result1 = result2 + right;
+    result2 += result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = base;
+    result1 = result2 + base;
+    result2 += result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = left;
+    result1 = result2 - left;
+    result2 -= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = right;
+    result1 = result2 - right;
+    result2 -= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = base;
+    result1 = result2 - base;
+    result2 -= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = left;
+    result1 = result2 ^ left;
+    result2 ^= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = right;
+    result1 = result2 ^ right;
+    result2 ^= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = base;
+    result1 = result2 ^ base;
+    result2 ^= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = left;
+    result1 = result2 & left;
+    result2 &= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = right;
+    result1 = result2 & right;
+    result2 &= result2;
+    assert(names_is_equal(result1, result2));
+
+    result2 = base;
+    result1 = result2 & base;
+    result2 &= result2;
+    assert(names_is_equal(result1, result2));
+
+    std::cout << "Success!\n";
   }
   catch(ParseError& parse_error)
   {
@@ -68,261 +321,5 @@ int main()
     exit(1);
   }
 
-  ContributionsTxt result1, result2;
-
-  result1 = base + left;
-  result2 = base;
-  result2 += left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = base + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left + base;
-  result2 = left;
-  result2 += base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = left + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base - left;
-  result2 = base;
-  result2 -= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = base - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left - base;
-  result2 = left;
-  result2 -= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = left - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base ^ left;
-  result2 = base;
-  result2 ^= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = base ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left ^ base;
-  result2 = left;
-  result2 ^= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = left ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base & left;
-  result2 = base;
-  result2 &= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = base & result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left & base;
-  result2 = left;
-  result2 &= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = left & result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base + right;
-  result2 = base;
-  result2 += right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = base + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right + base;
-  result2 = right;
-  result2 += base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = right + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base - right;
-  result2 = base;
-  result2 -= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = base - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right - base;
-  result2 = right;
-  result2 -= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = right - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base ^ right;
-  result2 = base;
-  result2 ^= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = base ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right ^ base;
-  result2 = right;
-  result2 ^= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = right ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = base & right;
-  result2 = base;
-  result2 &= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = base & result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right & base;
-  result2 = right;
-  result2 &= base;
-  assert(names_is_equal(result1, result2));
-  result2 = base;
-  result2 = right & result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left + right;
-  result2 = left;
-  result2 += right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = left + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right + left;
-  result2 = right;
-  result2 += left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = right + result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left - right;
-  result2 = left;
-  result2 -= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = left - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right - left;
-  result2 = right;
-  result2 -= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = right - result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left ^ right;
-  result2 = left;
-  result2 ^= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = left ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right ^ left;
-  result2 = right;
-  result2 ^= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = right ^ result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = left & right;
-  result2 = left;
-  result2 &= right;
-  assert(names_is_equal(result1, result2));
-  result2 = right;
-  result2 = left & result2;
-  assert(names_is_equal(result1, result2));
-
-  result1 = right & left;
-  result2 = right;
-  result2 &= left;
-  assert(names_is_equal(result1, result2));
-  result2 = left;
-  result2 = right & result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = left;
-  result1 = result2 + left;
-  result2 += result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = right;
-  result1 = result2 + right;
-  result2 += result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = base;
-  result1 = result2 + base;
-  result2 += result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = left;
-  result1 = result2 - left;
-  result2 -= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = right;
-  result1 = result2 - right;
-  result2 -= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = base;
-  result1 = result2 - base;
-  result2 -= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = left;
-  result1 = result2 ^ left;
-  result2 ^= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = right;
-  result1 = result2 ^ right;
-  result2 ^= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = base;
-  result1 = result2 ^ base;
-  result2 ^= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = left;
-  result1 = result2 & left;
-  result2 &= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = right;
-  result1 = result2 & right;
-  result2 &= result2;
-  assert(names_is_equal(result1, result2));
-
-  result2 = base;
-  result1 = result2 & base;
-  result2 &= result2;
-  assert(names_is_equal(result1, result2));
-
-  std::cout << "Success!\n";
   return 0;
 }
-

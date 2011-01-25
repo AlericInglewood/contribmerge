@@ -3,7 +3,7 @@ Header Base --> Right
 Name001 Right
 	VWR-1
 	VWR-11
-Name011 Right
+Name011 Both
 	VWR-3
 	VWR-13
 Name101 Base
@@ -16,23 +16,22 @@ Nbme001 Right
 	VWR-1
 	VWR-11
 	VWR-111
-Nbme011 Right
+Nbme011 Both
 	VWR-3
 	VWR-13
 	VWR-113
 Nbme101 Base
 	VWR-5
 	VWR-15
-	VWR-115
 Nbme111 Base
 	VWR-7
 	VWR-17
-	VWR-117
 Ncme001 Right
 	VWR-1
-Ncme011 Right
+Ncme011 Both
 	VWR-3
 Ncme101 Base
 	VWR-5
+	VWR-15
 Ncme111 Base
 	VWR-7
