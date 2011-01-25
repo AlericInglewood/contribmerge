@@ -29,6 +29,7 @@ Nbme111 Base
 	VWR-7
 	VWR-17
 	VWR-117
+	SNOW-7
 Ncme010 Left
 	VWR-2
 Ncme011 Both
@@ -38,5 +39,6 @@ Ncme110 Base
 	VWR-16
 Ncme111 Base
 	VWR-7
+	SNOW-7
 Xtra Left
 	VWR-10000
