@@ -28,8 +28,6 @@
 #include "ContributionsTxt_operators.h"
 #include "exceptions.h"
 
-typedef std::pair<const FullName, Contributions> Contributor;
-
 FormattedContributions operator+(FormattedContributions const& fc1, FormattedContributions const& fc2)
 {
   FormattedContributions result;

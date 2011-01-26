@@ -44,24 +44,4 @@ inline Inserter<ContributionsTxt::contributors_map> ContributionsTxt::get_insert
   return Inserter<contributors_map>(M_contributors);
 }
 
-inline ContributionsTxtOperator<ctop_intersection> operator&(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ContributionsTxtOperator<ctop_intersection>(ct1, ct2);
-}
-
-inline ContributionsTxtOperator<ctop_union> operator+(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ContributionsTxtOperator<ctop_union>(ct1, ct2);
-}
-
-inline ContributionsTxtOperator<ctop_difference> operator-(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ContributionsTxtOperator<ctop_difference>(ct1, ct2);
-}
-
-inline ContributionsTxtOperator<ctop_symmetric_difference> operator^(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ContributionsTxtOperator<ctop_symmetric_difference>(ct1, ct2);
-}
-
 #endif // CONTRIBUTIONSTXT_OPERATORS_H
