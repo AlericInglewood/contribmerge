@@ -1,1 +1,23 @@
-Work in progress.
+A three-way doc/contributions.txt merger.
+
+SYNOPSIS
+       contribmerge [ options ] left base right
+
+DESCRIPTION
+       contribmerge incorporates all changes that lead from `base' to `right' into `left'.
+       The result ordinarily goes into `left'.
+       contribmerge is useful for combining separate changes to an original.
+       Suppose `base' is the original, and both `left' and `right' are modifications of `base'.
+       Then contribmerge combines both changes.
+
+OPTIONS
+       -p     Send results to standard output instead of overwriting file 'left'.
+
+       -q     Quiet; do not warn about conflicts.
+
+       -V     Print version number.
+
+DIAGNOSTICS
+       Exit status is 0 for no conflicts, 1 for some conflicts, 2 for trouble.
+
+
