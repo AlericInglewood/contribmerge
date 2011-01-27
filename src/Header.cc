@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContributionsTxt.cc Implementation of class ContributionsTxt.
+//! @file Header.cc Implementation of class Header.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -19,32 +19,18 @@
 
 #ifndef USE_PCH
 #include "sys.h"
-#include <fstream>
-#include <iomanip>
 #include "debug.h"
 #endif
 
+#include "Header.h"
 #include "ContributionsTxt.h"
-#include "grammar_contrib.h"
-#include "ostream_operators.h"
 
-ContributionsTxt::ContributionsTxt(std::string const& filename) throw(ParseError) : M_header(std::string())
+Header::Header(ContributionsTxt const& contributions_txt) : M_header(contributions_txt.header().as_string())
 {
-  std::ifstream infile(filename.c_str());
-  typedef boost::spirit::istream_iterator parse_iterator_type;
-  InputRange<parse_iterator_type> range(static_cast<parse_iterator_type>(infile));
-  infile.unsetf(std::ios::skipws);
-
-  bool success = boost::spirit::qi::parse(
-      range.begin(), range.end(),
-      grammar::contributions_txt_grammar<parse_iterator_type>(),
-      *this);
-
-  if (!(success && range.empty()))
-    throw ParseError(range);
 }
 
-void ContributionsTxt::print_on(std::ostream& os) const
+Header& Header::operator=(ContributionsTxt const& contributions_txt)
 {
-  os << *this;
+  M_header = contributions_txt.header().as_string();
+  return *this;
 }

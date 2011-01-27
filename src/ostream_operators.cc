@@ -2,7 +2,7 @@
 //
 //! @file ostream_operators.cc Implementation of various ostream inserter functions.
 //
-// Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
+// Copyright (C) 2011, Aleric Inglewood
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

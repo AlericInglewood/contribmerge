@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContributionsTxt.cc Implementation of class ContributionsTxt.
+//! @file FullName.cc Implementation(s) related to class FullName.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -19,32 +19,22 @@
 
 #ifndef USE_PCH
 #include "sys.h"
-#include <fstream>
-#include <iomanip>
+#include <algorithm>
 #include "debug.h"
 #endif
 
-#include "ContributionsTxt.h"
-#include "grammar_contrib.h"
-#include "ostream_operators.h"
+#include "FullName.h"
+#include <boost/algorithm/string/predicate.hpp>
 
-ContributionsTxt::ContributionsTxt(std::string const& filename) throw(ParseError) : M_header(std::string())
+bool FullName::Compare::operator()(FullName const& name1, FullName const& name2) const
 {
-  std::ifstream infile(filename.c_str());
-  typedef boost::spirit::istream_iterator parse_iterator_type;
-  InputRange<parse_iterator_type> range(static_cast<parse_iterator_type>(infile));
-  infile.unsetf(std::ios::skipws);
-
-  bool success = boost::spirit::qi::parse(
-      range.begin(), range.end(),
-      grammar::contributions_txt_grammar<parse_iterator_type>(),
-      *this);
-
-  if (!(success && range.empty()))
-    throw ParseError(range);
-}
-
-void ContributionsTxt::print_on(std::ostream& os) const
-{
-  os << *this;
+  std::string const& n1(name1.M_full_name);
+  std::string const& n2(name2.M_full_name);
+  if (n1 == n2)
+    return false;
+  if (boost::ilexicographical_compare(n1, n2))
+    return true;
+  if (boost::ilexicographical_compare(n2, n1))
+    return false;
+  return boost::lexicographical_compare(n1, n2);
 }

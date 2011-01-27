@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContributionsTxt_operators.h Implementation of operators of ContributionsTxt.
+//! @file Inserter.h Implementation of class Inserter.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -17,20 +17,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONTRIBUTIONSTXT_OPERATORS_H
-#define CONTRIBUTIONSTXT_OPERATORS_H
+#ifndef INSERTER_H
+#define INSERTER_H
 
-#include "ContributionsTxt.h"
-
-inline bool operator==(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ct1.header() == ct2.header();
-}
-
-inline bool operator!=(ContributionsTxt const& ct1, ContributionsTxt const& ct2)
-{
-  return ct1.header() != ct2.header();
-}
+#include <iterator>
 
 template<class Container>
 struct Inserter {
@@ -39,9 +29,4 @@ struct Inserter {
   void operator()(typename Container::value_type const& value) { *M_inserter = value; }
 };
 
-inline Inserter<ContributionsTxt::contributors_map> ContributionsTxt::get_inserter(void)
-{
-  return Inserter<contributors_map>(M_contributors);
-}
-
-#endif // CONTRIBUTIONSTXT_OPERATORS_H
+#endif // INSERTER_H

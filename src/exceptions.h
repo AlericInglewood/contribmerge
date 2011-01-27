@@ -2,7 +2,7 @@
 //
 //! @file exceptions.h Exception classes.
 //
-// Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
+// Copyright (C) 2011, Aleric Inglewood
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,5 +47,20 @@ class MergeFailure : public std::exception
     // Destructor.
     virtual ~MergeFailure() throw() { }
 };
+
+template<class InIt>
+ParseError::ParseError(InputRange<InIt> const& bounded_input_range)
+{
+  int count = 100;
+  for (typename InputRange<InIt>::iterator iter = bounded_input_range.begin(); iter != bounded_input_range.end(); ++iter)
+  {
+    if (--count == 0)
+    {
+      M_rest += "...";
+      break;
+    }
+    M_rest += *iter;
+  }
+}
 
 #endif // EXCEPTIONS_H

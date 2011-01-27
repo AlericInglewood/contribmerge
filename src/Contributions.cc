@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file ContributionsTxt_operators.cc Implementation of operators of ContributionsTxt.
+//! @file Contributions.cc Implementation of class Contributions.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -23,18 +23,11 @@
 #include "debug.h"
 #endif
 
-#include "ContributionsTxt_operators.h"
-#include "ostream_operators.h"
+#include "Contributions.h"
+#include "Inserter.h"
 
-bool FullName::Compare::operator()(FullName const& name1, FullName const& name2) const
+Contributions::Contributions(FormattedContributions const& fc)
 {
-  std::string const& n1(name1.M_full_name);
-  std::string const& n2(name2.M_full_name);
-  if (n1 == n2)
-    return false;
-  if (boost::ilexicographical_compare(n1, n2))
-    return true;
-  if (boost::ilexicographical_compare(n2, n1))
-    return false;
-  return boost::lexicographical_compare(n1, n2);
+  Inserter<contributions_type> insert_into_contributions(M_contributions);
+  for_each(fc.contributions().begin(), fc.contributions().end(), insert_into_contributions);
 }

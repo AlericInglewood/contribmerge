@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file contribmerge.h Main implementation - header file.
+//! @file Header.h Implementation of class Header.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -17,11 +17,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONTRIBMERGE_H
-#define CONTRIBMERGE_H
+#ifndef HEADER_H
+#define HEADER_H
 
-#include "ostream_operators.h"
+#include <string>
 
-extern char const* git_revision;
+class ContributionsTxt;
 
-#endif // CONTRIBMERGE_H
+class Header
+{
+  private:
+    std::string M_header;	// Raw header data.
+
+  public:
+    explicit Header(std::string const& header) : M_header(header) { }
+    explicit Header(ContributionsTxt const&);
+    Header& operator=(ContributionsTxt const&);
+
+    // Accessors.
+    std::string const& as_string(void) const { return M_header; }
+
+    // Operator.
+    friend bool operator==(Header const& h1, Header const& h2) { return h1.M_header == h2.M_header; }
+    friend bool operator!=(Header const& h1, Header const& h2) { return h1.M_header != h2.M_header; }
+};
+
+#endif // HEADER_H

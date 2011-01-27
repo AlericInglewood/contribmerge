@@ -23,10 +23,12 @@
 #include "debug.h"
 #endif
 
+#include <algorithm>
+#include <cassert>
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
-#include "ContributionsTxt_operators.h"
 #include "exceptions.h"
+#include "Inserter.h"
 
 FormattedContributions operator+(FormattedContributions const& fc1, FormattedContributions const& fc2)
 {
@@ -36,7 +38,7 @@ FormattedContributions operator+(FormattedContributions const& fc1, FormattedCon
 		 fc2.contributions().begin(),
 		 fc2.contributions().end(),
 		 result.get_inserter(),
-		 ContributionEntryCompare());
+		 FormattedContributions::contributions_type::key_compare());
   return result;
 }
 
