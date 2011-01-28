@@ -23,5 +23,5 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 
-add_executable(contribmerge contribmerge.cc ostream_operators.cc ContributionsTxt.cc ContributionsTxt_operators.cc)
+add_executable(contribmerge contribmerge.cc Contributions.cc ContributionsTxt.cc debug.cc FormattedContributions.cc FullName.cc Header.cc ostream_operators.cc)
 target_link_libraries(contribmerge ${Boost_LIBRARIES})

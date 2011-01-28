@@ -2,7 +2,7 @@
 //
 //! @file ContributionsTxt.h Implementation of class ContributionsTxt.
 //
-// Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
+// Copyright (C) 2011, Aleric Inglewood
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,171 +21,43 @@
 #define CONTRIBUTIONSTXT_H
 
 #include <map>
-#include <vector>
 #include <string>
-#include <boost/algorithm/string/predicate.hpp>
 #include "exceptions.h"
-
-// Grammar rule: jira_project_key
-class JiraProjectKey
-{
-  private:
-    std::string M_jira_project_key_prefix;				// "VWR"
-    int M_issue_number;							// 123
-
-  public:
-    // Accessors.
-    std::string const& jira_project_key_prefix(void) const { return M_jira_project_key_prefix; }
-    int issue_number(void) const { return M_issue_number; }
-};
-
-// Grammar rule: contribution_entry
-class ContributionEntry
-{
-  private:
-    JiraProjectKey M_jira_project_key;					// "VWR-123"
-    std::string M_comment;						// Optional (empty if there is none).
-
-  public:
-    // Accessors.
-    JiraProjectKey const& jira_project_key(void) const { return M_jira_project_key; }
-    std::string const& comment(void) const { return M_comment; }
-};
-
-// Grammar rule: contributor.
-class Contributions
-{
-  private:
-    std::string M_raw_string;						// Raw contributor data (including full name).
-    std::vector<ContributionEntry> M_contributions;			// Vector of ContributionEntry's.
-
-  public:
-    // Accessors.
-    std::string const& raw_string(void) const { return M_raw_string; }
-    std::vector<ContributionEntry> const& contributions(void) const { return M_contributions; }
-
-  public:
-    static bool raw_compare(Contributions const& contribution1, Contributions const& contribution2);
-};
-
-class Header
-{
-  private:
-    std::string M_header;						// Raw header data.
-
-  public:
-    Header(void) { }
-    Header(std::string const& header) : M_header(header) { }
-
-    // Accessors.
-    std::string const& as_string(void) const { return M_header; }
-
-    // Operator.
-    friend bool operator==(Header const& h1, Header const& h2) { return h1.M_header == h2.M_header; }
-    friend bool operator!=(Header const& h1, Header const& h2) { return h1.M_header != h2.M_header; }
-};
-
-class FullName
-{
-  private:
-    std::string M_full_name;						// Firstname[ Lastname].
-
-  public:
-    FullName(std::string const& full_name) : M_full_name(full_name) { }
-
-    // Accessors.
-    std::string const& full_name(void) const { return M_full_name; }
-
-  public:
-    friend bool operator==(FullName const& name1, FullName const& name2) { return name1.M_full_name == name2.M_full_name; }
-    friend bool operator!=(FullName const& name1, FullName const& name2) { return name1.M_full_name != name2.M_full_name; }
-
-    typedef std::pair<FullName const, Contributions> contributors_map_value_type;
-    struct CaseInsensitiveCompare {
-      bool operator()(FullName const& name1, FullName const& name2) const;
-      bool operator()(contributors_map_value_type const& name1, contributors_map_value_type const& name2) const
-          { return operator()(name1.first, name2.first); }
-    };
-};
-
-enum ctop_types {
-  ctop_intersection,		// Intersection of raw-equal entries.
-  ctop_union,			// Union of names.
-  ctop_difference,		// Names in first not in last.
-  ctop_symmetric_difference	// Names only in first or last.
-};
-
-class ContributionsTxt;
-
-template<ctop_types ctop>
-struct ContributionsTxtOperator
-{
-  ContributionsTxt const& M_ct1;
-  ContributionsTxt const& M_ct2;
-  ContributionsTxtOperator(ContributionsTxt const& ct1, ContributionsTxt const& ct2) : M_ct1(ct1), M_ct2(ct2) { }
-};
+#include "Inserter.h"
+#include "FullName.h"
+#include "Header.h"
 
 // Grammar rule: contributions_txt.
 class ContributionsTxt
 {
   public:
-    typedef std::map<FullName, Contributions, FullName::CaseInsensitiveCompare> contributors_map;
+    typedef std::map<FullName, Contributions, FullName::Compare> contributors_map;
 
   private:
     Header M_header;							// Raw header text.
     contributors_map M_contributors;					// Map of Contributors.
 
   public:
-    void parse(std::string const& filename) throw(ParseError);
+    ContributionsTxt(std::string const& filename) throw(ParseError);
+    explicit ContributionsTxt(Header const& header) : M_header(header) { }
     void print_on(std::ostream& os) const;
+
+    Inserter<contributors_map> get_inserter(void) { return Inserter<contributors_map>(M_contributors); }
 
     // Accessors.
     Header const& header(void) const { return M_header; }
     contributors_map const& contributors(void) const { return M_contributors; }
 
-    // Assignment operators.
-    template<ctop_types ctop> ContributionsTxt& operator=(ContributionsTxtOperator<ctop> const& args);
-
-  public:
-    struct full_compare {
-      bool operator()(contributors_map::value_type const& contributor1, contributors_map::value_type const& contributor2) const;
-    };
-
     // Operators.
-    ContributionsTxt& operator+=(ContributionsTxt const& arg1) throw(MergeFailure);
-    ContributionsTxt& operator&=(ContributionsTxt const& arg1) throw();
-    ContributionsTxt& operator-=(ContributionsTxt const& arg1) throw();
-    ContributionsTxt& operator^=(ContributionsTxt const& arg1) throw();
+    ContributionsTxt& operator=(Header const& header) throw() { M_header = header; return *this; }
+    ContributionsTxt& operator=(ContributionsTxt const& ct) throw() { M_contributors = ct.M_contributors; return *this; }
+
+    friend bool operator==(ContributionsTxt const& ct, Header const& header) { return ct.M_header == header; }
+    friend bool operator==(Header const& header, ContributionsTxt const& ct) { return header == ct.M_header; }
+    friend bool operator!=(ContributionsTxt const& ct, Header const& header) { return ct.M_header != header; }
+    friend bool operator!=(Header const& header, ContributionsTxt const& ct) { return header != ct.M_header; }
+    friend bool operator==(ContributionsTxt const& ct1, ContributionsTxt const& ct2) { return ct1.M_header == ct2.M_header; }
+    friend bool operator!=(ContributionsTxt const& ct1, ContributionsTxt const& ct2) { return ct1.M_header != ct2.M_header; }
 };
-
-// Forward declarations of specializations.
-template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_intersection> const& args);
-template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_union> const& args);
-template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_difference> const& args);
-template<> ContributionsTxt& ContributionsTxt::operator=(ContributionsTxtOperator<ctop_symmetric_difference> const& args);
-
-// Union of names. If raw value of equal names differs, throw MergeFailure.
-inline ContributionsTxt& ContributionsTxt::operator+=(ContributionsTxt const& arg1) throw(MergeFailure)
-{
-  return *this = ContributionsTxtOperator<ctop_union>(*this, arg1);
-}
-
-// Intersection of raw data. Only keep contributors that have no changes whatsoever.
-inline ContributionsTxt& ContributionsTxt::operator&=(ContributionsTxt const& arg1) throw()
-{
-  return *this = ContributionsTxtOperator<ctop_intersection>(*this, arg1);
-}
-
-// Name set difference. Remove all entries with the same name (raw differences are ignored).
-inline ContributionsTxt& ContributionsTxt::operator-=(ContributionsTxt const& arg1) throw()
-{
-  return *this = ContributionsTxtOperator<ctop_difference>(*this, arg1);
-}
-
-// Symmetric name set difference. Remove all entries with the same name (raw differences are ignored), but add new names.
-inline ContributionsTxt& ContributionsTxt::operator^=(ContributionsTxt const& arg1) throw()
-{
-  return *this = ContributionsTxtOperator<ctop_symmetric_difference>(*this, arg1);
-}
 
 #endif // CONTRIBUTIONSTXT_H

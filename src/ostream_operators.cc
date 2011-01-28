@@ -2,7 +2,7 @@
 //
 //! @file ostream_operators.cc Implementation of various ostream inserter functions.
 //
-// Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
+// Copyright (C) 2011, Aleric Inglewood
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -78,6 +78,13 @@ std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions
     os << contributor->second;
   }
   os << "Number of Contributors: " << contributions_txt.contributors().size() << '\n';
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, Contributor const& val)
+{
+  os << val.first << '\n';
+  os << val.second;
   return os;
 }
 

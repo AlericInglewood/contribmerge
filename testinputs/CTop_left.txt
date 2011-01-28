@@ -3,7 +3,7 @@ Header Base
 Name010 Left
 	VWR-2
 	VWR-12
-Name011 Left
+Name011 Both
 	VWR-3
 	VWR-13
 Name110 Base
@@ -16,7 +16,7 @@ Nbme010 Left
 	VWR-2
 	VWR-12
 	VWR-112
-Nbme011 Left
+Nbme011 Both
 	VWR-3
 	VWR-13
 	VWR-113
@@ -25,18 +25,20 @@ Nbme011E Left
 Nbme110 Base
 	VWR-6
 	VWR-16
-	VWR-116
-Name111 Base
+Nbme111 Base
 	VWR-7
 	VWR-17
 	VWR-117
+	SNOW-7
 Ncme010 Left
 	VWR-2
-Ncme011 Left
+Ncme011 Both
 	VWR-3
 Ncme110 Base
 	VWR-6
+	VWR-16
 Ncme111 Base
 	VWR-7
+	SNOW-7
 Xtra Left
 	VWR-10000

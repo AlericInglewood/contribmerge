@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file contribmerge.h Main implementation - header file.
+//! @file ContributionEntry.h Implementation of class ContributionEntry.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -17,11 +17,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONTRIBMERGE_H
-#define CONTRIBMERGE_H
+#ifndef CONTRIBUTIONENTRY_H
+#define CONTRIBUTIONENTRY_H
 
-#include "ostream_operators.h"
+#include <string>
+#include "JiraProjectKey.h"
 
-extern char const* git_revision;
+// Grammar rule: contribution_entry
+class ContributionEntry
+{
+  private:
+    JiraProjectKey M_jira_project_key;		// "VWR-123"
+    std::string M_comment;			// Optional (empty if there is none).
 
-#endif // CONTRIBMERGE_H
+  public:
+    // Accessors.
+    JiraProjectKey const& jira_project_key(void) const { return M_jira_project_key; }
+    std::string const& comment(void) const { return M_comment; }
+};
+
+#endif // CONTRIBUTIONENTRY_H

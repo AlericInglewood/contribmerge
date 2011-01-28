@@ -1,6 +1,6 @@
 // contribmerge -- A three-way merge utility for doc/contributions.txt
 //
-//! @file contribmerge.h Main implementation - header file.
+//! @file Inserter.h Implementation of class Inserter.
 //
 // Copyright (C) 2011, Aleric Inglewood
 // 
@@ -17,11 +17,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONTRIBMERGE_H
-#define CONTRIBMERGE_H
+#ifndef INSERTER_H
+#define INSERTER_H
 
-#include "ostream_operators.h"
+#include <iterator>
 
-extern char const* git_revision;
+template<class Container>
+struct Inserter {
+  std::insert_iterator<Container> M_inserter;
+  Inserter(Container& container) : M_inserter(std::inserter(container, container.begin())) { }
+  void operator()(typename Container::value_type const& value) { *M_inserter = value; }
+};
 
-#endif // CONTRIBMERGE_H
+#endif // INSERTER_H

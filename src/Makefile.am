@@ -12,16 +12,25 @@ CXXFLAGS =
 
 contribmerge_SOURCES = \
 	contribmerge.cc \
+	Contributions.cc \
 	ContributionsTxt.cc \
-	ContributionsTxt_operators.cc \
+	FormattedContributions.cc \
+	FullName.cc \
+	Header.cc \
 	ostream_operators.cc \
 	contribmerge.h \
+	ContributionEntry.h \
+	Contributions.h \
 	ContributionsTxt.h \
-	ContributionsTxt_operators.h \
-	InputRange.h \
-	ostream_operators.h \
+	exceptions.h \
+	FormattedContributions.h \
+	FullName.h \
 	grammar_contrib.h \
-	exceptions.h
+	Header.h \
+	InputRange.h \
+	Inserter.h \
+	JiraProjectKey.h \
+	ostream_operators.h
 
 contribmerge_CXXFLAGS = @CXXFLAGS@ @CWD_FLAGS@
 contribmerge_LDADD = @LIBS@ @CWD_LIBS@

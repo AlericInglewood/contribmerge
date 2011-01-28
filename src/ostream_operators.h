@@ -2,7 +2,7 @@
 //
 //! @file ostream_operators.h Declaration of various ostream inserter functions.
 //
-// Copyright (C) 2011, Aleric Inglewood & Boroondas Gupte
+// Copyright (C) 2011, Aleric Inglewood
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,14 +26,16 @@
 
 class JiraProjectKey;
 class ContributionEntry;
-class Contributor;
+class Contributions;
 class FullName;
 class ContributionsTxt;
+typedef std::pair<FullName const, Contributions> Contributor;
 
 std::ostream& operator<<(std::ostream& os, JiraProjectKey const& key);
 std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry);
-std::ostream& operator<<(std::ostream& os, Contributor const& contributor);
 std::ostream& operator<<(std::ostream& os, FullName const& full_name);
+std::ostream& operator<<(std::ostream& os, Contributions const& contributions);
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt);
+std::ostream& operator<<(std::ostream& os, Contributor const&);
 
 #endif // OSTREAM_OPERATORS_H
