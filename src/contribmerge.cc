@@ -210,8 +210,15 @@ int main(int argc, char* argv[])
 //    ("out,o", po::value< std::string >(&filename_out), "out file. If passed, the merge result will be written there in case of a successful merge." )
   ;
 
+  po::positional_options_description p;
+  p.add("base", 1)
+   .add("left", 1)
+   .add("right", 1);
+
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::command_line_parser(argc, argv)
+                                   .options(desc).positional(p).run(),
+            vm);
   po::notify(vm);
 
   if (vm.count("help")) {
