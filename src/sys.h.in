@@ -22,8 +22,6 @@
 #ifndef SYS_H
 #define SYS_H
 
-#define USING_CMAKE 0@USING_CMAKE@
-
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
