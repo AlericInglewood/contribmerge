@@ -23,7 +23,6 @@
 #include <map>
 #include <string>
 #include "exceptions.h"
-#include "Inserter.h"
 #include "FullName.h"
 #include "Header.h"
 
@@ -42,7 +41,7 @@ class ContributionsTxt
     explicit ContributionsTxt(Header const& header) : M_header(header) { }
     void print_on(std::ostream& os) const;
 
-    Inserter<contributors_map> get_inserter(void) { return Inserter<contributors_map>(M_contributors); }
+    std::insert_iterator<contributors_map> get_inserter(void) { return std::inserter<contributors_map>(M_contributors, M_contributors.begin()); }
 
     // Accessors.
     Header const& header(void) const { return M_header; }

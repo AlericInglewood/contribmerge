@@ -28,31 +28,117 @@
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
 #include "exceptions.h"
-#include "Inserter.h"
+#include "three_way_merge.h"
 
-FormattedContributions operator+(FormattedContributions const& fc1, FormattedContributions const& fc2)
+struct CommentEqual
 {
-  FormattedContributions result;
-  std::set_union(fc1.contributions().begin(),
-                 fc1.contributions().end(),
-		 fc2.contributions().begin(),
-		 fc2.contributions().end(),
-		 result.get_inserter(),
-		 FormattedContributions::contributions_type::key_compare());
-  return result;
-}
+  bool operator()(ContributionEntry const& ce1, ContributionEntry const& ce2)
+  {
+    assert(!(ce1.jira_project_key() < ce2.jira_project_key()) && !(ce2.jira_project_key() < ce1.jira_project_key()));
+    return ce1.comment() == ce2.comment();
+  }
+};
 
-Contributor operator+(Contributor const& c1, Contributor const& c2)
+// We can't do this, so fail -- but lets print an error message that explains what's wrong.
+struct CommentMerger
 {
-  assert(c1.first == c2.first);
-  return Contributor(c1.first, c1.second + c2.second);
-}
+  template<typename Iterator1, typename Iterator2, typename Iterator3, typename OutputIterator>
+  void operator()(Iterator1 l, Iterator2 b, Iterator3 r, OutputIterator&) throw(MergeFailure)
+  {
+    if (l == Iterator1())
+    {
+      std::cerr << "Failure: hit rule: n (-, m) --> MergeFailure.\n";
+      std::cerr << "With n = <ContributionEntry>" << b->jira_project_key() << b->comment() <<
+	  "</ContributionEntry> and m = <ContributionEntry>" << r->jira_project_key() << r->comment() <<
+	  "</ContributionEntry>" << std::endl;
+      throw MergeFailure();
+    }
+    else if (r == Iterator3())
+    {
+      std::cerr << "Failure: hit rule: n (m, -) --> MergeFailure.\n";
+      std::cerr << "With n = <ContributionEntry>" << b->jira_project_key() << b->comment() <<
+	  "</ContributionEntry> and m = <ContributionEntry>" << l->jira_project_key() << l->comment() <<
+	  "</ContributionEntry>" << std::endl;
+      throw MergeFailure();
+    }
+    else if (b == Iterator2())
+    {
+      std::cerr << "Failure: hit rule: - (n, m) --> MergeFailure.\n";
+      std::cerr << "With n = <ContributionEntry>" << l->jira_project_key() << l->comment() <<
+	  "</ContributionEntry> and m = <ContributionEntry>" << r->jira_project_key() << r->comment() <<
+	  "</ContributionEntry>" << std::endl;
+      throw MergeFailure();
+    }
+    else
+    {
+      std::cerr << "Failure: hit rule: n (m, k) --> MergeFailure.\n";
+      std::cerr << "With n = <ContributionEntry>" << b->jira_project_key() << b->comment() <<
+	  "</ContributionEntry> and m = <ContributionEntry>" << l->jira_project_key() << l->comment() <<
+	  "</ContributionEntry> and k = <ContributionEntry>" << r->jira_project_key() << r->comment() <<
+	  "</ContributionEntry>" << std::endl;
+      throw MergeFailure();
+    }
+  }
+};
 
-template<class Iterator>
-inline bool is_less(Iterator const& it1, Iterator const& it2, Iterator const& end1, Iterator const& end2)
+struct ContributionsEqual
 {
-  return it1 != end1 && (it2 == end2 || ContributionsTxt::contributors_map::key_compare()(*it1, *it2));
-}
+  bool operator()(Contributor const& c1, Contributor const& c2)
+  {
+    assert(c1.first == c2.first);
+    return c1.second.raw_string() == c2.second.raw_string();
+  }
+};
+
+struct ContributionsMerger
+{
+  template<typename Iterator1, typename Iterator2, typename Iterator3, typename OutputIterator>
+  void operator()(Iterator1 l, Iterator2 b, Iterator3 r, OutputIterator& output) throw(MergeFailure)
+  {
+    if (l == Iterator1())
+    {
+      std::cerr << "Failure: hit rule: n (-, m) --> MergeFailure.\n";
+      std::cerr << "With n = <RAW>" << b->second.raw_string() << "</RAW> and m = <RAW>" << r->second.raw_string() << "</RAW>" << std::endl;
+      throw MergeFailure();
+    }
+    else if (r == Iterator3())
+    {
+      std::cerr << "Failure: hit rule: n (m, -) --> MergeFailure.\n";
+      std::cerr << "With n = <RAW>" << b->second.raw_string() << "</RAW> and m = <RAW>" << l->second.raw_string() << "</RAW>" << std::endl;
+      throw MergeFailure();
+    }
+    else if (b == Iterator2())
+    {
+      assert(l->first == r->first);
+      FormattedContributions left(l->second), right(r->second);
+      FormattedContributions result;
+
+      std::set_union(left.contributions().begin(), left.contributions().end(),
+		     right.contributions().begin(), right.contributions().end(),
+		     result.get_inserter(),
+		     FormattedContributions::contributions_type::key_compare());
+
+      *output = Contributor(l->first, result);
+    }
+    else
+    {
+      assert(l->first == r->first);
+      FormattedContributions left(l->second), base(b->second), right(r->second);
+      FormattedContributions result;
+
+      three_way_merge(left.contributions().begin(), left.contributions().end(),
+		      base.contributions().begin(), base.contributions().end(),
+		      right.contributions().begin(), right.contributions().end(),
+		      result.get_inserter(),
+		      CommentMerger(),
+		      FormattedContributions::contributions_type::key_compare(),
+		      CommentEqual());
+
+      *output = Contributor(b->first, result);
+    }
+    ++output;
+  }
+};
 
 // Below we use the following notation:
 //
@@ -92,249 +178,12 @@ ContributionsTxt merge(ContributionsTxt const& base, ContributionsTxt const& lef
 
   ContributionsTxt result(header);
 
-  // Merge full names.
-  //
-  // Note that although names are ordered roughly case insensitive,
-  // they ARE case sensitive when otherwise equal: "AAA" < "aaa" (lexiographic compare),
-  // but "AAb" > "aaa" (case insensitive lexiographic compare). Therefore each name
-  // is unique and different names are uncorrelated. Hence, a name either exists (n),
-  // or it doesn't exist (-). There are no other possibilities.
-  //
-  // Therefore, all the rules are trivial.
-  // However, we also have the take the payload into account: the list of contributions.
-  // Let n, m and l be the same name but different payloads.
-  //
-  // - (-, -) --> -
-  // - (-, n) --> n
-  // - (n, -) --> n
-  //
-  // Case A:
-  // - (n, n) --> n
-  // - (n, m) --> n + m
-  //
-  // n (-, -) --> -
-  //
-  // Case B:
-  // n (-, n) --> -
-  // n (-, m) --> MergeFailure
-  //
-  // Case C:
-  // n (n, -) --> -
-  // n (m, -) --> MergeFailure
-  //
-  // Case D:
-  // n (n, n) --> n
-  // n (n, m) --> m
-  // n (m, n) --> m
-  // n (m, m) --> m
-  // n (m, l) --> merge payload
-  //
-
-  typedef ContributionsTxt::contributors_map contributors_map;
-  typedef contributors_map::const_iterator iterator;
-  iterator b  = base.contributors().begin();
-  iterator be = base.contributors().end();
-  iterator l  = left.contributors().begin();
-  iterator le = left.contributors().end();
-  iterator r  = right.contributors().begin();
-  iterator re = right.contributors().end();
-
-  Inserter<contributors_map> use_it(result.get_inserter());
-
-  // At any point there can be 13 ways that the smallest remaining elements are ordered:
-  //
-  // Ordering		Action			Rule
-  // *b < *l < *r	++b			n (-, -) --> -
-  // *b < *r < *l	++b			n (-, -) --> -
-  // *l < *b < *r	use_it(*l++)		- (n, -) --> n
-  // *l < *r < *b	use_it(*l++)		- (n, -) --> n
-  // *r < *b < *l	use_it(*r++)		- (-, n) --> n
-  // *r < *l < *b	use_it(*r++)		- (-, n) --> n
-  //
-  // *r < *b = *l	use_it(*r++)		- (-, n) --> n
-  // *b = *l < *r	Case C, ++b, ++l
-  // *l < *b = *r	use_it(*l++)		- (n, -) --> n
-  // *b = *r < *l	Case B, ++b, ++r
-  // *b < *l = *r	++b			n (-, -) --> -
-  // *l = *r < *b	Case A, ++r, ++l	- (n, m) --> n + m
-  //
-  // *b = *l = *r	Case D, ++b, ++l, ++r
-  //
-  while (b != be || l != le || r != re)
-  {
-    if (is_less(b, l, be, le))
-    {
-      // One of
-      //
-      // Ordering		Action			Rule
-      // *b < *l < *r		++b			n (-, -) --> -
-      // *b < *r < *l		++b			n (-, -) --> -
-      // *r < *b < *l		use_it(*r++)		- (-, n) --> n
-      // *b = *r < *l		Case B, ++b, ++r
-      // *b < *l = *r		++b			n (-, -) --> -
-      //
-      if (is_less(b, r, be, re))
-      {
-	// One of
-	//
-	// Ordering		Action			Rule
-	// *b < *l < *r		++b			n (-, -) --> -
-	// *b < *r < *l		++b			n (-, -) --> -
-	// *b < *l = *r		++b			n (-, -) --> -
-	//
-	// Skip it.
-	++b;
-	continue;
-      }
-      else if (is_less(r, b, re, be))
-      {
-	// Ordering		Action			Rule
-	// *r < *b < *l		use_it(*r++)		- (-, n) --> n
-	//
-	// Use it.
-	use_it(*r++);
-	continue;
-      }
-      // Ordering		Action			Rule
-      // *b = *r < *l		Case B, ++b, ++r
-      //
-      // Case B
-
-      if (b->second.raw_string() != r->second.raw_string())
-      {
-	std::cerr << "Failure: hit rule: n (-, m) --> MergeFailure.\n";
-	std::cerr << "Where n = <RAW>" << b->second.raw_string() << "</RAW> and m = <RAW>" << r->second.raw_string() << "</RAW>" << std::endl;
-	throw MergeFailure();
-      }
-
-      ++b;
-      ++r;
-      continue;
-    }
-    // One of
-    //
-    // Ordering		Action			Rule
-    // *l < *b < *r	use_it(*l++)		- (n, -) --> n
-    // *l < *r < *b	use_it(*l++)		- (n, -) --> n
-    // *r < *l < *b	use_it(*r++)		- (-, n) --> n
-    // *r < *b = *l	use_it(*r++)		- (-, n) --> n
-    // *b = *l < *r	Case C, ++b, ++l
-    // *l < *b = *r	use_it(*l++)		- (n, -) --> n
-    // *l = *r < *b	Case A, ++r, ++l	- (n, m) --> n + m
-    // *b = *l = *r	Case D, ++b, ++l, ++r
-    else if (is_less(l, r, le, re))
-    {
-      // One of
-      //
-      // Ordering		Action			Rule
-      // *l < *b < *r		use_it(*l++)		- (n, -) --> n
-      // *l < *r < *b		use_it(*l++)		- (n, -) --> n
-      // *b = *l < *r		Case C, ++b, ++l
-      // *l < *b = *r		use_it(*l++)		- (n, -) --> n
-      if (is_less(l, b, le, be))
-      {
-	// One of
-	//
-	// Ordering		Action			Rule
-	// *l < *b < *r		use_it(*l++)		- (n, -) --> n
-	// *l < *r < *b		use_it(*l++)		- (n, -) --> n
-	// *l < *b = *r		use_it(*l++)		- (n, -) --> n
-	//
-	// Use it.
-	use_it(*l++);
-	continue;
-      }
-      // Ordering		Action			Rule
-      // *b = *l < *r		Case C, ++b, ++l
-      //
-      // Case C
-
-      if (b->second.raw_string() != l->second.raw_string())
-      {
-	std::cerr << "Failure: hit rule: n (m, -) --> MergeFailure.\n";
-	std::cerr << "Where n = <RAW>" << b->second.raw_string() << "</RAW> and m = <RAW>" << l->second.raw_string() << "</RAW>" << std::endl;
-	throw MergeFailure();
-      }
-
-      ++b;
-      ++l;
-      continue;
-    }
-    // One of
-    //
-    // Ordering		Action			Rule
-    // *r < *l < *b	use_it(*r++)		- (-, n) --> n
-    // *r < *b = *l	use_it(*r++)		- (-, n) --> n
-    // *l = *r < *b	Case A, ++r, ++l	- (n, m) --> n + m
-    // *b = *l = *r	Case D, ++b, ++l, ++r
-    if (is_less(r, l, re, le))
-    {
-      // One of
-      //
-      // Ordering		Action			Rule
-      // *r < *l < *b		use_it(*r++)		- (-, n) --> n
-      // *r < *b = *l		use_it(*r++)		- (-, n) --> n
-      //
-      // Use it.
-      use_it(*r++);
-      continue;
-    }
-    // One of
-    //
-    // Ordering		Action			Rule
-    // *l = *r < *b	Case A, ++r, ++l	- (n, m) --> n + m
-    // *b = *l = *r	Case D, ++b, ++l, ++r
-    if (is_less(r, b, re, be))
-    {
-      // Ordering		Action			Rule
-      // *l = *r < *b		Case A, ++r, ++l	- (n, m) --> n + m
-      //
-      // Case A
-      //
-      // Since n + n = n, we can just always use the union of left and right.
-      use_it(*r + *l);
-
-      ++r;
-      ++l;
-      continue;
-    }
-    // Ordering		Action			Rule
-    // *b = *l = *r	Case D, ++b, ++l, ++r
-    //
-    // Case D
-    // n (n, n) --> n
-    // n (n, m) --> m
-    // n (m, n) --> m
-    // n (m, m) --> m
-    // n (m, l) --> merge payload
-
-    if (b->second.raw_string() == r->second.raw_string())
-    {
-      // One of
-      // n (n, n) --> n
-      // n (m, n) --> m
-      use_it(*l);
-    }
-    else if (b->second.raw_string() == l->second.raw_string())
-    {
-      // n (n, m) --> m
-      use_it(*r);
-    }
-    else if (l->second.raw_string() == r->second.raw_string())
-    {
-      // n (m, m) --> m
-      use_it(*r);
-    }
-    else
-    {
-      // n (m, l) --> merge payload
-      std::cout << "*** payload merge needed ***" << std::endl;
-    }
-
-    ++b;
-    ++l;
-    ++r;
-  }
+  three_way_merge(left.contributors().begin(), left.contributors().end(),
+		  base.contributors().begin(), base.contributors().end(),
+		  right.contributors().begin(), right.contributors().end(),
+		  result.get_inserter(), ContributionsMerger(),
+		  ContributionsTxt::contributors_map::key_compare(),
+		  ContributionsEqual());
 
   return result;
 }
