@@ -81,6 +81,9 @@ dnl Use in sys.h to force recompilation when CXXFLAGS change.
 CXXFLAGS_FINGER_PRINT=[$(echo $CXXFLAGS | sed -e 's/-W[a-z-]* *//g')]
 AC_SUBST([CXXFLAGS_FINGER_PRINT])
 
+dnl Look for Boost program options (command line option parsing)
+CW_BOOST([$cw_enable_static], [no], [program_options])
+
 dnl Generate src/sys.h from src/sys.h.in
 CW_CONFIG_FILE([src], [sys.h])
 

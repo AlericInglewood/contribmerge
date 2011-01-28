@@ -27,9 +27,31 @@
 #include "ContributionsTxt.h"
 #include "ContributionsTxt_operators.h"
 
-int main()
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
+
+int main(int argc, char* argv[])
 {
   Debug(debug::init());
+
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
+    ("base", po::value< std::string >(), "contributions.txt in the youngest common ancestor of the two merged revisions")
+    ("left", po::value< std::string >(), "contributions.txt in one of the merged revisions" )
+    ("right", po::value< std::string >(), "contributions.txt in the other merged revision" )
+    ("out,o", po::value< std::string >(), "out file. If passed, the merge result will be written there in case of a successful merge." )
+  ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 1;
+  }
 
   ContributionsTxt base;
   ContributionsTxt left;

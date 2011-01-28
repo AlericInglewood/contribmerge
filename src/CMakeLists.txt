@@ -17,4 +17,11 @@ configure_file (
 # make it possible to find the generated sys.h
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+#* \TODO: how can we tell find_package that we don't need multi-thread
+#*        support?
+find_package(Boost COMPONENTS program_options REQUIRED)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
+
 add_executable(contribmerge contribmerge.cc ostream_operators.cc ContributionsTxt.cc ContributionsTxt_operators.cc)
+target_link_libraries(contribmerge ${Boost_LIBRARIES})
