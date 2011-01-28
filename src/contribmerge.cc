@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
 
   po::options_description visible_options("Allowed options");
   visible_options.add_options()
-    ("help", "produce help message")
+    ("help,h", "produce help message")
 //    ("out,o", po::value< std::string >(&filename_out), "out file. If passed, the merge result will be written there in case of a successful merge." )
   ;
 
