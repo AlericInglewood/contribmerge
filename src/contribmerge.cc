@@ -196,13 +196,18 @@ int main(int argc, char* argv[])
 {
   Debug(debug::init());
 
+  std::string filename_base;
+  std::string filename_left;
+  std::string filename_right;
+//  std::string filename_out;
+
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "produce help message")
-    ("base", po::value< std::string >(), "contributions.txt in the youngest common ancestor of the two merged revisions")
-    ("left", po::value< std::string >(), "contributions.txt in one of the merged revisions" )
-    ("right", po::value< std::string >(), "contributions.txt in the other merged revision" )
-    ("out,o", po::value< std::string >(), "out file. If passed, the merge result will be written there in case of a successful merge." )
+    ("base", po::value< std::string >(&filename_base), "contributions.txt in the youngest common ancestor of the two merged revisions")
+    ("left", po::value< std::string >(&filename_left), "contributions.txt in one of the merged revisions" )
+    ("right", po::value< std::string >(&filename_right), "contributions.txt in the other merged revision" )
+//    ("out,o", po::value< std::string >(&filename_out), "out file. If passed, the merge result will be written there in case of a successful merge." )
   ;
 
   po::variables_map vm;
@@ -216,9 +221,9 @@ int main(int argc, char* argv[])
 
   try
   {
-    ContributionsTxt base("base");
-    ContributionsTxt left("left");
-    ContributionsTxt right("right");
+    ContributionsTxt base(filename_base);
+    ContributionsTxt left(filename_left);
+    ContributionsTxt right(filename_right);
 
     ContributionsTxt result = merge(base, left, right);
     result.print_on(std::cout);
