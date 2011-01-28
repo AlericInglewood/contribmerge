@@ -201,14 +201,22 @@ int main(int argc, char* argv[])
   std::string filename_right;
 //  std::string filename_out;
 
-  po::options_description desc("Allowed options");
-  desc.add_options()
+  po::options_description visible_options("Allowed options");
+  visible_options.add_options()
     ("help", "produce help message")
+//    ("out,o", po::value< std::string >(&filename_out), "out file. If passed, the merge result will be written there in case of a successful merge." )
+  ;
+
+  // separate descriptions for positional options, so they don't show up in help
+  po::options_description hidden_options;
+  hidden_options.add_options()
     ("base", po::value< std::string >(&filename_base), "contributions.txt in the youngest common ancestor of the two merged revisions")
     ("left", po::value< std::string >(&filename_left), "contributions.txt in one of the merged revisions" )
     ("right", po::value< std::string >(&filename_right), "contributions.txt in the other merged revision" )
-//    ("out,o", po::value< std::string >(&filename_out), "out file. If passed, the merge result will be written there in case of a successful merge." )
   ;
+
+po::options_description cmdline_options;
+cmdline_options.add(visible_options).add(hidden_options);
 
   po::positional_options_description p;
   p.add("base", 1)
@@ -216,13 +224,13 @@ int main(int argc, char* argv[])
    .add("right", 1);
 
   po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv)
-                                   .options(desc).positional(p).run(),
+  po::store(po::command_line_parser(argc, argv).options(cmdline_options)
+                                               .positional(p).run(),
             vm);
   po::notify(vm);
 
   if (vm.count("help")) {
-    std::cout << desc << std::endl;
+    std::cout << visible_options << std::endl;
     return 1;
   }
 
