@@ -30,7 +30,8 @@ contribmerge_SOURCES = \
 	InputRange.h \
 	Inserter.h \
 	JiraProjectKey.h \
-	ostream_operators.h
+	ostream_operators.h \
+	three_way_merge.h
 
 contribmerge_CXXFLAGS = @CXXFLAGS@ @CWD_FLAGS@
 contribmerge_LDADD = @LIBS@ @CWD_LIBS@
