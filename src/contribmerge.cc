@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <boost/program_options.hpp>
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
 #include "exceptions.h"
@@ -187,8 +188,6 @@ ContributionsTxt merge(ContributionsTxt const& base, ContributionsTxt const& lef
 
   return result;
 }
-
-#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
