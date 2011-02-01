@@ -200,12 +200,16 @@ int main(int argc, char* argv[])
   std::string filename_right;
 //  std::string filename_out;
 
-  po::options_description visible_options("Allowed options");
-  visible_options.add_options()
+  po::options_description generic_options("generic options");
+  generic_options.add_options()
     ("help,h", "Produce help message.")
+    ("version,V", "Print version number.")
+  ;
+
+  po::options_description merge_options("merge options");
+  merge_options.add_options()
 //    ("p", "Send results to standard output instead of overwriting file 'left'.")
 //    ("quiet,q", "Quiet; do not warn about conflicts.")
-    ("version,V", "Print version number.")
 //    ("out,o", po::value<std::string>(&filename_out), "Out file. If passed, the merge result will be written there in case of a successful merge.")
   ;
 
@@ -218,8 +222,10 @@ int main(int argc, char* argv[])
   ;
 
   po::options_description cmdline_options;
-  cmdline_options.add(visible_options).add(hidden_options);
+  cmdline_options.add(generic_options).add(merge_options).add(hidden_options);
 
+  /* Don't forget to manually update the --help message when changing
+   * the list of positional options! */
   po::positional_options_description p;
   p.add("base", 1)
    .add("left", 1)
@@ -233,7 +239,11 @@ int main(int argc, char* argv[])
 
   if (vm.count("help"))
   {
-    std::cout << visible_options << std::endl;
+    std::cout << "Usage: contribmerge (<generic options> | [<merge options>] <base> <left> <right>)" << std::endl
+              << "Incorporates all changes that lead from <base> to <right> into <left>." << std::endl
+              << std::endl;
+    std::cout << generic_options << std::endl
+              << merge_options << std::endl;
     return 1;
   }
 
