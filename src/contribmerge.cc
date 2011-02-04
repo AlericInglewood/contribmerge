@@ -228,8 +228,12 @@ int main(int argc, char* argv[])
   /* Don't forget to manually update the --help message when changing
    * the list of positional options! */
   po::positional_options_description p;
-  p.add("base", 1)
-   .add("left", 1)
+
+  /* This order matches mercurial's default for
+   * the [merge-tools] setting <tool>.args
+   * See http://mercurial.selenic.com/wiki/MergeToolConfiguration */
+  p.add("left", 1)
+   .add("base", 1)
    .add("right", 1);
 
   po::variables_map vm;
@@ -240,7 +244,7 @@ int main(int argc, char* argv[])
 
   if (vm.count("help"))
   {
-    std::cout << "Usage: contribmerge (<generic options> | [<merge options>] <base> <left> <right>)" << std::endl
+    std::cout << "Usage: contribmerge (<generic options> | [<merge options>] <left> <base> <right>)" << std::endl
               << "Incorporates all changes that lead from <base> to <right> into <left>." << std::endl
               << std::endl;
     std::cout << generic_options << std::endl

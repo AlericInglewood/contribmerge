@@ -1,7 +1,7 @@
 A three-way doc/contributions.txt merger.
 
 SYNOPSIS
-       contribmerge (<generic options> | [<merge options>] <base> <left> <right>)
+       contribmerge (<generic options> | [<merge options>] <left> <base> <right>)
 
 DESCRIPTION
        contribmerge incorporates all changes that lead from <base> to <right> into <left>.
