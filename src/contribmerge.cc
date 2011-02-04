@@ -19,6 +19,7 @@
 
 #ifndef USE_PCH
 #include "sys.h"
+#include <fstream>
 #include <iostream>
 #include "debug.h"
 #endif
@@ -208,7 +209,7 @@ int main(int argc, char* argv[])
 
   po::options_description merge_options("merge options");
   merge_options.add_options()
-//    ("p", "Send results to standard output instead of overwriting file 'left'.")
+    ("stdout,p", "Send results to standard output instead of overwriting file <left>.")
 //    ("quiet,q", "Quiet; do not warn about conflicts.")
 //    ("out,o", po::value<std::string>(&filename_out), "Out file. If passed, the merge result will be written there in case of a successful merge.")
   ;
@@ -264,7 +265,17 @@ int main(int argc, char* argv[])
     ContributionsTxt right(filename_right);
 
     ContributionsTxt result = merge(base, left, right);
-    result.print_on(std::cout);
+
+    if (vm.count("stdout")) // User requested output to standard output.
+    {
+      result.print_on(std::cout);
+    }
+    else // We output to file <left> (default).
+    {
+      std::ofstream outfile(filename_left.c_str());
+      result.print_on(outfile);
+      outfile.close();
+    }
   }
   catch(ParseError& parse_error)
   {
