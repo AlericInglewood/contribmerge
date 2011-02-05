@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <string>
 #include <boost/program_options.hpp>
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
