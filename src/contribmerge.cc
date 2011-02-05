@@ -23,6 +23,7 @@
 #include "debug.h"
 #endif
 
+#include <string>
 #include "contribmerge.h"
 #include "ContributionsTxt.h"
 #include "ContributionsTxt_operators.h"
