@@ -211,7 +211,11 @@ int main(int argc, char* argv[])
   merge_options.add_options()
     ("stdout,p", "Send results to standard output instead of overwriting file <left>.")
 //    ("quiet,q", "Quiet; do not warn about conflicts.")
-    ("out,o", po::value<std::string>(), "Out file. If passed, the merge result will be written there in case of a successful merge.")
+    ("out,o", po::value<std::string>(),
+              "Out file. If passed, the merge result will be written "
+              "there in case of a successful merge. If both, -p and -o "
+              "are specified, the result will be sent to both, "
+              "standard output and the specified file.")
   ;
 
   // Separate descriptions for positional options, so they don't show up in help.
@@ -274,12 +278,18 @@ int main(int argc, char* argv[])
     {
       result.print_on(std::cout);
     }
-    else // User didn't requested output to standard output. Use file.
+
+    if (vm.count("out")) // User requested output to specified file.
     {
-      std::ofstream outfile((vm.count("out") ?               // If --out was passed ...
-                               vm["out"].as<std::string>() : // ... use it
-                               filename_left                 // ... else use file <left>
-                            ).c_str()); // In either case, convert to char const*
+      // This might be additional to output to standard output above.
+      std::ofstream outfile(vm["out"].as<std::string>().c_str());
+      result.print_on(outfile);
+      outfile.close();
+    }
+    else if (!vm.count("stdout")) // User didn't specify output target.
+    {
+      // Output to file <left> by default.
+      std::ofstream outfile(filename_left.c_str());
       result.print_on(outfile);
       outfile.close();
     }
