@@ -71,13 +71,17 @@ std::ostream& operator<<(std::ostream& os, Header const& header)
 
 std::ostream& operator<<(std::ostream& os, ContributionsTxt const& contributions_txt)
 {
-  os << "Header:=======================================\n" << contributions_txt.header() << "==============================================\n\n";
+  os << contributions_txt.header() << '\n';
   for (std::map<FullName, Contributions>::const_iterator contributor = contributions_txt.contributors().begin(); contributor != contributions_txt.contributors().end(); ++contributor)
   {
     os << contributor->first << '\n';
     os << contributor->second;
   }
-  os << "Number of Contributors: " << contributions_txt.contributors().size() << '\n';
+
+  // One empty line at the end of the file ever since
+  // https://bitbucket.org/lindenlab/viewer-development/changeset/8ebffe3f80d0
+  os << '\n';
+
   return os;
 }
 
