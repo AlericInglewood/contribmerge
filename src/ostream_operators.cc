@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& os, ContributionEntry const& entry)
 {
   os << entry.jira_project_key();
   if (!entry.comment().empty())
-    os << ' ' << entry.comment();
+    os << entry.comment();
   return os;
 }
 
