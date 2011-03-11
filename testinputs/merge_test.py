@@ -42,10 +42,20 @@ p = subprocess.Popen([ contribmerge_command,
                        base_file_name,
                        right_file_name],
                      stdout=output_file)     # stdout to temporary file.
-print p.wait() # Waits for the process to terminate and returns the exit code.
+exit_code = p.wait()
+if exit_code == 0: # Waits for the process to terminate and check exit code
+    print "Contribmerge reports successful merge! :-)"
+else:
+    print "Contribmerge reports problem! (exit code ", exit_code, ") :-("
+    sys.exit(1)
+
 
 # Compare observed output to expected output
-print filecmp.cmp(output_file.name, desired_result_file_name)
+if filecmp.cmp(output_file.name, desired_result_file_name):
+    print "Output matches expected result! :-)"
+else:
+    print "Output does not match expected result! :-("
+    sys.exit(1)
 
 # For good measure, close the temporary file (which also deletes it).
 # (Both would happen implicitly anyway, as soon as the file object is
