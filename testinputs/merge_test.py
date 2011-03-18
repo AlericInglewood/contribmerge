@@ -25,8 +25,8 @@ import subprocess
 import filecmp
 
 contribmerge_command = sys.argv[1]
-base_file_name = sys.argv[2]
-left_file_name = sys.argv[3]
+left_file_name = sys.argv[2]
+base_file_name = sys.argv[3]
 right_file_name = sys.argv[4]
 desired_result_file_name = sys.argv[5]
 
